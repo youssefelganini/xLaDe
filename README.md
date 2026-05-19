@@ -77,7 +77,7 @@ For details on trust, verification, and distribution:
 
 ## Vision
 
-xLaDe aims to provide a **safe, structured, and reproducible laboratory** for experimenting with Lean ecosystem ideas that are difficult to evaluate directly in upstream repositories.
+xLaDe aims to provide a safe, structured, and reproducible laboratory for experimenting with Lean ecosystem ideas that are difficult to evaluate directly in upstream repositories.
 
 The long-term vision includes exploration of:
 - human-friendly proof workflows
