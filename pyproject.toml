@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xlade"
+version = "1.5.0"
+description = "Experimental Lean 4 Ecosystem Framework"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.11"
+keywords = ["lean4", "formal-verification", "proof-assistant", "ecosystem"]
+
+[[project.authors]]
+name = "Lakshit Singh Bisht"
+email = "lakshitsinghbishttm@gmail.com"
+
+[[project.authors]]
+name = "Manpreet Sahoo"
+
+[[project.authors]]
+name = "Deepak Pandey"
+
+[[project.authors]]
+name = "Thota Siva"
+
+[project.scripts]
+xlade = "xlade.cli.main:main"
+
+[project.urls]
+Repository = "https://github.com/LakshitSinghBishtTM/xLaDe"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["xlade*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
