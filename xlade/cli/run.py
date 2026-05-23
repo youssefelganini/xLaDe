@@ -1,6 +1,7 @@
 import os
 import time
 import json
+import shutil
 import subprocess
 import tomllib
 from xlade.core.errors import error
@@ -78,6 +79,23 @@ def _execute(exp_type, entry):
         result = subprocess.run(
             ["bash", entry],
             capture_output=False,
+        )
+        return "success" if result.returncode == 0 else "failed"
+
+    if exp_type == "lean-policy" and entry:
+        if not shutil.which("lake"):
+            print("Execution: lake not found — cannot run lean-policy experiment.")
+            print("Install Lean 4 and Lake to enable full execution.")
+            return "skipped"
+
+        exp_dir = os.path.dirname(entry) if os.path.dirname(entry) else "."
+        script_name = "enforceReview"
+
+        print(f"Executing Lake script: {script_name}")
+        result = subprocess.run(
+            ["lake", "script", "run", script_name],
+            capture_output=False,
+            cwd=exp_dir if os.path.isdir(exp_dir) else ".",
         )
         return "success" if result.returncode == 0 else "failed"
 
