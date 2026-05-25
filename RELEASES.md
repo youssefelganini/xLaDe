@@ -56,3 +56,16 @@ This file mirrors GitHub Releases for archival and offline reference.
 - Added and configured mirrors to sync automatically (sourceforge remaining)
 - Restructured tools section for future modifications
 - Regular improvements in docs for updated info
+
+## v1.5.0 - 2026-05-26
+
+### Highlights
+- xlade is now pip-installable via pyproject.toml
+- 50-test pytest suite, all passing
+- EXP-002 executes check-kernel.sh for real
+- EXP-003 (doc coverage) added and executable
+- metrics.json written and displayed on every run
+- xlade metrics and xlade status show real run history
+- errors.py duplication removed
+- CODE_OF_CONDUCT.md contact filled in
+- ROADMAP.md added covering v1.5.0 to v2.0.0
