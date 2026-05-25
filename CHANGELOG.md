@@ -105,3 +105,47 @@ This monthly release focuses mainly on organization and official site of xLaDe a
 
 ### Notes
 This monthly release makes the CLI tool execute experiments, but the testing of the xLaDe CLI hasn't been done properly, so problems may occur.
+
+## [1.5.0] — 2026-05-26
+
+### Highlights
+- CLI becomes real and xlade is now a properly installable Python package
+- 50-test pytest suite added, all passing on Python 3.14
+- EXP-002 and EXP-003 now execute for real instead of simulating
+- metrics.json written on every run, read by xlade metrics and xlade status
+
+### Added
+- tests/ directory with 50 tests across 8 modules (test_init, test_mode,
+  test_run, test_run_execution, test_doctor, test_check,
+  test_list_experiments, test_metrics, test_status, test_exp003)
+- pyproject.toml — proper Python packaging, xlade installs via pip
+- tests/conftest.py with fixture isolation (tmp_project, initialized_project,
+  fake_home, experiments_dir)
+- _write_metrics() in run.py — appends structured JSON record on every run
+- _execute() in run.py — dispatches script-policy experiments to bash,
+  lean-policy experiments to lake with graceful fallback if lake not found
+- xlade metrics — aligned run history table with status symbols
+- xlade status — run summary with success/fail counts and recent runs
+- EXP-003: Documentation Coverage Check — scripts/check-doc-coverage.sh
+- experiments/exp-001-proof-review/Proofs/Reviewed.lean
+- ROADMAP.md — v1.5.0 through v2.0.0 release plan
+- docs/AI_use.md — AI usage policy for contributors
+
+### Changed
+- run.py now writes metrics.json on every run with experiment_id, mode,
+  lean_toolchain, timestamp, status
+- run.py now executes script-policy experiments via subprocess
+- run.py lean-policy branch: runs lake script enforceReview if lake present,
+  records skipped if lake not found
+- xlade/cli/errors.py now re-exports from xlade/core/errors.py
+- xlade metrics reads from .xlade/metrics.json not just metrics/ directory
+- xlade status shows full run summary from .xlade/metrics.json
+- CODE_OF_CONDUCT.md contact method filled in
+- .gitignore cleaned up and expanded
+- modes/experimental/enabled-experiments.md updated to include EXP-003
+
+### Notes
+- EXP-001 execution remains skipped without Lake installed — requires
+  Lean 4 toolchain (addressed in v1.6.0)
+- CLI is functional and tested but still experimental
+- 50/50 tests passing on Python 3.14
