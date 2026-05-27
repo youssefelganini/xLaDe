@@ -38,7 +38,7 @@ Security and boundary assumptions:
 
 ## Current Version and Releases
 
-- **Current version:** `v1.4.0`
+- **Current version:** `v1.5.0`
 - **Version file:** [`VERSION`](VERSION)
 
 Release documentation:
