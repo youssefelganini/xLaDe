@@ -45,7 +45,4 @@ jobs:
           echo "Pushing to Gitea..."
           git push --mirror https://${{ secrets.GITEA_TOKEN }}@gitea.com/$GH_USER/$REPO.git || echo "Gitea push failed"
 
-          echo "Pushing to SourceForge..."
-          git push --mirror ssh://lakshitsbishttm@git.code.sf.net/p/xlade/github || echo "SourceForge push failed"
-
           echo "All mirror attempts completed."
