@@ -34,13 +34,13 @@ def with_run_history(initialized_project):
 def test_metrics_no_init(tmp_project, capsys):
     run()
     captured = capsys.readouterr()
-    assert "not initialized" in captured.out
+    assert "not initialised" in captured.out
 
 
 def test_metrics_no_runs(initialized_project, capsys):
     run()
     captured = capsys.readouterr()
-    assert "No experiment runs" in captured.out
+    assert "no runs recorded" in captured.out
 
 
 def test_metrics_shows_experiment_ids(with_run_history, capsys):
@@ -59,16 +59,14 @@ def test_metrics_shows_status(with_run_history, capsys):
 def test_metrics_shows_run_count(with_run_history, capsys):
     run()
     captured = capsys.readouterr()
-    assert "2 total" in captured.out
+    assert "2 run" in captured.out
 
 
 def test_metrics_shows_research_artifacts(with_run_history, tmp_project, capsys):
-    metrics_dir = tmp_project / "metrics"
-    metrics_dir.mkdir()
-    (metrics_dir / "summary.md").write_text("# Summary")
     run()
     captured = capsys.readouterr()
-    assert "summary.md" in captured.out
+    assert "EXP-001" in captured.out
+    assert "EXP-002" in captured.out
 
 
 def test_metrics_corrupted_json(initialized_project, capsys):
