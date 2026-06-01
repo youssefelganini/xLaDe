@@ -14,7 +14,7 @@
   <img src="https://img.shields.io/badge/version-1.5.0-blue" alt="Version">
   <img src="https://img.shields.io/badge/status-experimental-orange" alt="Status">
   <img src="https://img.shields.io/badge/Lean-4-purple" alt="Lean 4">
-  <img src="https://img.shields.io/badge/platform-Linux%20%7C%20Windows%20%7C%20Android-lightgrey" alt="Platform">
+  <img src="https://img.shields.io/badge/platform-Linux%20%7C%20BSD%20%7C%20Android-lightgrey" alt="Platform">
   <a href="https://github.com/LakshitSinghBishtTM/xLaDe/graphs/contributors"><img src="https://img.shields.io/github/contributors/LakshitSinghBishtTM/xLaDe?color=green" alt="Contributors"></a>
   <a href="https://github.com/LakshitSinghBishtTM/xLaDe/issues"><img src="https://img.shields.io/github/issues/LakshitSinghBishtTM/xLaDe" alt="Issues"></a>
 </p>
