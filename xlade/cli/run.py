@@ -6,31 +6,31 @@ import subprocess
 import tomllib
 from xlade.core.errors import error
 
+SEP = "-" * 100
+
 
 def run(exp_id):
     if not os.path.isdir(".xlade"):
-        error(
-            "Workspace not initialized",
-            "No .xlade directory found.",
-            "Run `xlade init` in this project."
-        )
+        print("  [error]  Workspace not initialised.")
+        print("           Run 'xlade init' in this project.")
         return
 
     exp_path = os.path.join("experiments", exp_id)
     if not os.path.isdir(exp_path):
-        print(f"Experiment not found: {exp_id}")
+        print(f"  [error]  Experiment not found: {exp_id}")
+        print("           Run 'xlade list experiments' to see available experiments.")
         return
 
     config_path = os.path.join(exp_path, "experiment.toml")
     if not os.path.exists(config_path):
-        print(f"No experiment.toml found for {exp_id}")
+        print(f"  [error]  No experiment.toml found for {exp_id}")
         return
 
     try:
         with open(config_path, "rb") as f:
             config = tomllib.load(f)
     except Exception as e:
-        print(f"Failed to parse experiment.toml: {e}")
+        print(f"  [error]  Failed to parse experiment.toml: {e}")
         return
 
     home = os.path.expanduser("~")
@@ -43,8 +43,8 @@ def run(exp_id):
 
     allowed_modes = config.get("allowed_modes", [])
     if allowed_modes and current_mode not in allowed_modes:
-        print(f"Experiment {exp_id} is not allowed in mode: {current_mode}")
-        print(f"Allowed modes: {', '.join(allowed_modes)}")
+        print(f"  [error]  Experiment '{exp_id}' is not allowed in mode: {current_mode}")
+        print(f"           Allowed modes: {', '.join(allowed_modes)}")
         return
 
     lean_toolchain = config.get("lean_toolchain", "unspecified")
@@ -52,54 +52,54 @@ def run(exp_id):
     exp_type = config.get("type", "unknown")
     entry = config.get("entry", None)
 
-    print(f"Running experiment: {exp_id}")
-    print(f"Mode: {current_mode}")
-    print(f"Required Lean: {lean_toolchain}")
-    print(f"Timestamp: {timestamp}")
+    print()
+    print(f"  Running experiment: {exp_id}")
+    print(f"  Mode:      {current_mode}")
+    print(f"  Toolchain: {lean_toolchain}")
+    print(f"  Timestamp: {timestamp}")
+    print(f"  {SEP}")
 
-    status = _execute(exp_type, entry)
+    status = _execute(exp_type, entry, exp_path)
+
+    print(f"  {SEP}")
+    print(f"  Status: {status}")
+    print()
 
     with open(".xlade/last-run", "w") as f:
         f.write(exp_id + "\n")
 
     _write_metrics(exp_id, current_mode, lean_toolchain, timestamp, config, status)
 
-    print(f"Status: {status}")
 
-
-def _execute(exp_type, entry):
+def _execute(exp_type, entry, exp_path):
     if exp_type == "script-policy" and entry:
         if not os.path.isfile(entry):
-            print(f"Entry script not found: {entry}")
+            print(f"  [error]  Entry script not found: {entry}")
             return "error"
 
         if not os.access(entry, os.X_OK):
             os.chmod(entry, 0o755)
 
-        result = subprocess.run(
-            ["bash", entry],
-            capture_output=False,
-        )
+        result = subprocess.run(["bash", entry], capture_output=False)
         return "success" if result.returncode == 0 else "failed"
 
     if exp_type == "lean-policy" and entry:
         if not shutil.which("lake"):
-            print("Execution: lake not found — cannot run lean-policy experiment.")
-            print("Install Lean 4 and Lake to enable full execution.")
+            print("  [skip]  lake not found -- cannot run lean-policy experiment.")
+            print("          Install Lean 4 and Lake via elan:")
+            print("          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh")
             return "skipped"
 
-        exp_dir = os.path.dirname(entry) if os.path.dirname(entry) else "."
         script_name = "enforceReview"
-
-        print(f"Executing Lake script: {script_name}")
+        print(f"  Executing Lake script: {script_name}")
         result = subprocess.run(
             ["lake", "script", "run", script_name],
             capture_output=False,
-            cwd=exp_dir if os.path.isdir(exp_dir) else ".",
+            cwd=exp_path if os.path.isdir(exp_path) else ".",
         )
         return "success" if result.returncode == 0 else "failed"
 
-    print("Execution: simulated")
+    print("  Execution: simulated (no entry point defined)")
     return "simulated"
 
 
@@ -115,13 +115,13 @@ def _write_metrics(exp_id, mode, lean_toolchain, timestamp, config, status):
             existing = []
 
     entry = {
-        "experiment_id": exp_id,
+        "experiment_id":   exp_id,
         "experiment_name": config.get("name", exp_id),
-        "type": config.get("type", "unknown"),
-        "mode": mode,
-        "lean_toolchain": lean_toolchain,
-        "timestamp": timestamp,
-        "status": status,
+        "type":            config.get("type", "unknown"),
+        "mode":            mode,
+        "lean_toolchain":  lean_toolchain,
+        "timestamp":       timestamp,
+        "status":          status,
     }
 
     existing.append(entry)
