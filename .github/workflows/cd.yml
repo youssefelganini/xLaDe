@@ -48,15 +48,7 @@ jobs:
           body: |
             See [CHANGELOG.md](https://github.com/LakshitSinghBishtTM/xLaDe/blob/main/CHANGELOG.md) for release notes.
 
-            **Install:**
-            ```
-            pip install -e .
-            ```
+            Please provide your feedback. It will help make xLaDe better :)
 
-            **Verify:**
-            ```
-            xlade doctor
-            xlade --help
-            ```
           files: dist/*
           fail_on_unmatched_files: false
