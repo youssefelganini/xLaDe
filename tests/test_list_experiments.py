@@ -4,7 +4,7 @@ from xlade.cli.list_experiments import run
 def test_list_no_experiments_dir(tmp_project, capsys):
     run()
     captured = capsys.readouterr()
-    assert "No experiments directory" in captured.out
+    assert "No experiments" in captured.out
 
 
 def test_list_empty_experiments_dir(tmp_project, capsys):
