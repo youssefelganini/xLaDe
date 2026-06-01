@@ -1,9 +1,7 @@
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/logo/xlade-logo-dark.png">
-    <source media="(prefers-color-scheme: light)" srcset="assets/logo/xlade-logo-light.png">
-    <img alt="xLaDe Logo" src="assets/logo/xlade-logo.svg" width="260">
-  </picture>
+  <img alt="xLaDe Logo"
+       src="assets/logo/xlade-logo.svg"
+       width="260">
 </p>
 
 <h2 align="center">xLaDe</h2>
