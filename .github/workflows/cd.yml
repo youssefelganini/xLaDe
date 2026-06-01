@@ -1,0 +1,62 @@
+name: CD
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install xlade
+        run: pip install -e .
+
+      - name: Install pytest
+        run: pip install pytest
+
+      - name: Run test suite
+        run: pytest tests/ -v
+
+      - name: Read version
+        id: version
+        run: echo "version=$(cat VERSION)" >> $GITHUB_OUTPUT
+
+      - name: Build Python package
+        run: |
+          pip install build
+          python -m build
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "xLaDe v${{ steps.version.outputs.version }}"
+          body: |
+            See [CHANGELOG.md](https://github.com/LakshitSinghBishtTM/xLaDe/blob/main/CHANGELOG.md) for release notes.
+
+            **Install:**
+            ```
+            pip install -e .
+            ```
+
+            **Verify:**
+            ```
+            xlade doctor
+            xlade --help
+            ```
+          files: dist/*
+          fail_on_unmatched_files: false
