@@ -7,7 +7,7 @@
 </p>
 
 <h2 align="center">xLaDe</h2>
-<p align="center">Experimental Lean 4 Ecosystem Framework</p>
+<p align="center">eXperimental Lean 4 advanced Development ecosystem</p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0-blue.svg" alt="License"></a>
