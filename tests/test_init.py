@@ -27,4 +27,4 @@ def test_init_idempotent(tmp_project, capsys):
     run()
     run()
     captured = capsys.readouterr()
-    assert "already initialized" in captured.out
+    assert "already initialised" in captured.out
