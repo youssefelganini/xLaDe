@@ -1,155 +1,260 @@
-# xLaDe Architecture Overview
+# xLaDe Architecture
 
 ## 1. Purpose of This Document
 
-This document describes the **architectural intent** of the xLaDe repository.  
-xLaDe is an experimental, early-stage project that explores **ecosystem-level design considerations** around Lean 4, rather than introducing new formal results or kernel-level modifications.
+This document describes the **architectural intent and current structure** of
+the xLaDe repository. It is intended for contributors and researchers who want
+to understand how the project is organised, where boundaries lie, and how
+components relate to each other.
 
-The goal of this document is not to specify a finalized architecture, but to:
-- make explicit which parts of the system are *stable* versus *experimental*,
-- document boundaries for safe experimentation,
-
-This document is intended for contributors, reviewers, and researchers who wish to understand how xLaDe is structured and how it is expected to evolve.
+xLaDe is an experimental project. This document reflects the current state
+accurately rather than describing an aspirational design.
 
 ---
 
 ## 2. Architectural Philosophy
 
-xLaDe is guided by three core architectural principles:
+xLaDe is guided by three core principles:
 
-1. **Non-invasive experimentation**  
-   Experiments should avoid modifying Lean’s trusted kernel or core semantics.
+**Non-invasive experimentation.**
+Experiments must not modify Lean's trusted kernel or core semantics. All
+observable effects must be attributable to ecosystem-level design decisions,
+not language modification.
 
-2. **Explicit architectural boundaries**  
-   The repository should clearly distinguish between components that are fixed and components that may evolve.
+**Explicit architectural boundaries.**
+The repository clearly distinguishes between components that are fixed
+(the Lean kernel) and components that may evolve (experiments, tooling,
+policies, CLI). This boundary is enforced by CI, not just documented.
 
-3. **Minimal core with demand-driven growth**  
-   New tooling or abstractions are introduced only in response to concrete use cases, rather than anticipated needs.
-
-These principles prioritize clarity, reversibility, and long-term maintainability over rapid feature growth.
+**Minimal core with demand-driven growth.**
+New abstractions are introduced only in response to concrete use cases.
+The architecture stays lean — pun intended.
 
 ---
 
-## 3. High-Level Repository Structure
+## 3. Repository Structure
 
-At a high level, the xLaDe repository is organized as follows:
-
+```
 xLaDe/
-|-- lean-core/               [trusted, immutable Lean 4 submodule]
-|-- lean-toolchain           [pins Lean 4 version]
-|-- lakefile.lean            [main build configuration]
-|-- modes/                   [operational modes]
-|   |-- stable/
-|   |-- experimental/
-|   |-- onboarding/
-|-- experiments/             [isolated experiments]
-|   |-- exp-001-proof-review/
-|   |-- exp-002-kernel-boundary/
-|-- policies/                [global constraints & lifecycle rules]
-|-- xlade/                   [Python CLI orchestration package]
-|-- scripts/                 [enforcement scripts]
-|-- tools/                   [supporting utilities]
-|-- docs/                    [architecture, rationale, roadmap]
-|-- security/                [security related documents]
-|-- examples/                [minimal Lean demos]
-|-- .github/                 [CI & contribution templates]
-|-- LICENSE                  [GNU General Public License v3.0 (GPL-3.0)]
+├── .github/
+│   └── workflows/          CI — tests, kernel protection, mirrors
+├── bin/
+│   └── xlade               CLI entrypoint (calls xlade.cli.main)
+├── docs/                   Design rationale and usage documentation
+├── examples/               Minimal Lean 4 examples
+├── experiments/            Ecosystem experiments (each is a directory)
+│   ├── exp-001-proof-review/
+│   ├── exp-002-kernel-boundary/
+│   └── exp-003-doc-coverage/
+├── lean-core/              Lean 4 source (git submodule, immutable)
+├── metrics/                Research artifact files (qualitative .md)
+├── modes/
+│   ├── experimental/
+│   ├── onboarding/
+│   └── stable/
+├── policies/               Repository governance documents
+├── scripts/                Policy enforcement shell scripts
+├── security/               Threat model, trust model, security policy
+├── tests/                  83-test pytest suite
+│   ├── conftest.py
+│   ├── test_check.py
+│   ├── test_doctor.py
+│   ├── test_exp003.py
+│   ├── test_init.py
+│   ├── test_lean_core.py
+│   ├── test_list_experiments.py
+│   ├── test_metrics.py
+│   ├── test_mode.py
+│   ├── test_run.py
+│   ├── test_run_execution.py
+│   └── test_status.py
+├── tools/                  Optional helper utilities
+├── xlade/                  Python CLI package
+│   ├── cli/
+│   │   ├── check.py
+│   │   ├── doctor.py
+│   │   ├── init.py
+│   │   ├── list_experiments.py
+│   │   ├── main.py
+│   │   ├── metrics.py
+│   │   ├── mode.py
+│   │   ├── run.py
+│   │   └── status.py
+│   └── core/
+│       ├── errors.py
+│       └── lean.py         Subprocess wrapper — LeanResult, run_lake_script, etc.
+├── lakefile.lean           Root Lake configuration
+├── lake-manifest.json      Locked dependency graph
+├── lean-toolchain          Pinned Lean compiler version
+├── pyproject.toml          Python packaging
+└── VERSION                 Current version string
+```
 
 ---
 
 ## 4. Architectural Boundaries
 
-xLaDe distinguishes between **stable components** and **experimental components**.  
-This separation is essential to ensure that ecosystem-level experimentation does not compromise correctness or upstream compatibility.
+### 4.1 Stable Components — Do Not Modify
 
-### 4.1 Stable Components (Do Not Modify)
+**Lean kernel and core semantics.**
+The `lean-core/` submodule is immutable. It is included as a reference
+baseline only. No experiment, mode, or tool may modify it.
 
-- **Lean kernel and core semantics**  
-  The trusted kernel and core type-theoretic semantics are treated as immutable.
+**Core compiler behaviour.**
+Changes to elaboration, type checking, or evaluation semantics are out of
+scope for xLaDe entirely.
 
-- **Core compiler behavior**  
-  Changes to elaboration, type checking, or evaluation semantics are out of scope.
+CI enforces kernel immutability on every pull request. Any modification to
+`lean-core/` is detected and the build fails.
 
-These components are included via the `lean-core/` submodule to preserve provenance and simplify synchronization with upstream Lean.
+### 4.2 Experimental Components — Safe to Modify
 
----
+Everything outside `lean-core/` is an experimental component:
 
-### 4.2 Experimental Components (Safe to Explore)
+- Repository layout and organisation
+- CLI behaviour and commands
+- Experiment definitions and scripts
+- Policy enforcement mechanisms
+- Metrics and evaluation artifacts
+- Documentation
 
-- **Repository layout and organization**
-- **Documentation structure**
-- **Auxiliary tooling experiments**
-- **Example overlays and prototype workflows**
-
-These areas are the primary focus of xLaDe. Experiments here are expected to be lightweight, reversible, and well-documented.
-
----
-
-## 5. The `lean-core/` Submodule
-
-The `lean-core/` directory contains a forked snapshot of the Lean 4 core, tracked as a Git submodule.
-
-The submodule serves two major purposes:
-
-1. **Isolation**  
-   Ecosystem-level experiments can be conducted without altering upstream code.
-
-2. **Reversibility**  
-   Updates or rollbacks are straightforward, avoiding long-lived divergence.
-
-At the current stage, xLaDe does **not** introduce semantic changes to the Lean core.
+These are the primary focus of xLaDe. Changes here are expected to be
+reversible and well-documented.
 
 ---
 
-## 6. Example Contribution Path (Conceptual)
+## 5. The Python CLI Layer — `xlade/`
 
-A typical contribution to xLaDe may proceed as follows:
+The CLI is a pure Python package installed via `pip install -e .`. It
+provides all user-facing commands and orchestrates experiment execution.
 
-1. A contributor identifies a limitation or ecosystem-level pain point.
-2. The idea is discussed via issues or documentation drafts.
-3. A small, localized experiment is proposed (e.g., documentation layout, example workflow).
-4. The experiment is evaluated informally.
-5. If useful, it is integrated in a minimal and well-scoped form.
+```
+xlade/
+├── cli/        One module per command (init, run, status, doctor, ...)
+└── core/
+    ├── errors.py   Shared error formatting
+    └── lean.py     All subprocess calls to lake and lean
+```
 
-This workflow emphasizes **experimentation before commitment**.
+### `xlade/core/lean.py`
+
+This module is the single point of contact between the Python CLI and the
+Lean toolchain. All `subprocess` calls to `lake` and `lean` go through here.
+
+It exposes:
+
+- `LeanResult` — dataclass with `success`, `returncode`, `stdout`, `stderr`,
+  `command` fields. Supports `bool()` directly (`if result:`).
+- `run_lake_script(script_name, cwd, passthrough)` — runs `lake script run`
+- `run_lake_build(cwd, passthrough)` — runs `lake build`
+- `run_lean_file(path, passthrough)` — runs `lean <file>`
+- `run_script(entry, cwd, passthrough)` — runs `bash <script>`
+- `lean_version()` / `lake_version()` — version queries
+
+All functions check for the binary first and return a failed `LeanResult`
+with a human-readable message if it is not found. Exceptions from subprocess
+are caught internally. Callers never handle raw subprocess errors.
+
+`passthrough=True` streams output to the terminal live (default for
+experiment runs). `passthrough=False` captures stdout/stderr and returns
+them in the result (default for version queries and diagnostics).
+
+### `xlade/cli/run.py`
+
+Orchestrates experiment execution. Reads `experiment.toml`, validates
+workspace and mode, dispatches to `xlade/core/lean.py` based on experiment
+type, writes a structured record to `.xlade/metrics.json` on every run
+regardless of outcome.
+
+Experiment types currently supported:
+
+| Type             | Execution                                             |
+|------------------|-------------------------------------------------------|
+| `script-policy`  | `lean.run_script(entry)` via bash                     |
+| `lean-policy`    | `lean.run_lake_script("enforceReview", cwd=exp_path)` |
 
 ---
 
-## 7. Current Status and Limitations
+## 6. Experiments
 
-xLaDe is currently in an exploratory and experimental phase.  
-The repository should be understood as a research artifact rather than a production-ready ecosystem or tooling platform.
+Each experiment is a self-contained directory under `experiments/`. The
+directory name is the experiment ID used in CLI commands.
 
-At this stage:
+```
+experiments/exp-002-kernel-boundary/
+├── experiment.toml     Metadata — id, type, status, allowed_modes, entry
+├── README.md           Research question, hypothesis, enforcement, exit criteria
+├── METRICS.md          Evaluation observations
+└── policy.md           Policy description (for documentation experiments)
+```
 
-- No stable tools or finalized workflows are provided.
-- No performance, scalability, or usability claims are made.
-- Experiments remain limited in scope and qualitatively evaluated.
-- All enforcement mechanisms operate at the repository level and are reversible.
+`experiment.toml` drives execution:
 
-This status is intentional. The project prioritizes clarity, explicit boundaries, and controlled experimentation over feature completeness. xLaDe is not intended to replace existing Lean workflows, but to document and evaluate ecosystem-level architectural choices.
+```toml
+id = "exp-002-kernel-boundary"
+name = "Kernel Boundary Violation Detection"
+type = "script-policy"
+status = "active"
+allowed_modes = ["experimental"]
+lean_toolchain = "leanprover/lean4:stable"
+entry = "scripts/check-kernel.sh"
+```
+
+The `entry` field is relative to the repository root for `script-policy`
+experiments and relative to the experiment directory for `lean-policy`
+experiments.
 
 ---
 
-## 8. Future Evolution
+## 7. Runtime State
 
-The architecture of xLaDe is expected to evolve incrementally.  
-Future changes will be guided by experimental results, contributor feedback, and concrete use cases rather than speculative design.
+xLaDe maintains two state locations:
 
-Possible directions include:
+**Global state** — `~/.xlade/`
+- `mode` — active mode (`experimental`, `stable`, `onboarding`)
 
-- refinement of repository-level policies,
-- extension of lightweight tooling,
-- broader evaluation of workflow constraints,
-- comparative ecosystem studies.
+**Project-local state** — `.xlade/` (created by `xlade init`)
+- `experiments.lock` — experiment activation state
+- `last-run` — ID of the most recently executed experiment
+- `metrics.json` — structured run history, appended on every `xlade run`
 
-Growth is intended to remain demand-driven, with explicit justification for added complexity.
+Deleting `.xlade/` resets project state completely. No Lean files are
+affected. See [`RUNTIME_STATE.md`](RUNTIME_STATE.md) for full details.
 
 ---
 
-## 9. Summary
+## 8. CI Workflows
 
-xLaDe treats ecosystem architecture as a first-class research object.  
-Rather than introducing new proof technologies, it focuses on making architectural boundaries, workflow constraints, and repository-level policies explicit and testable.
+| Workflow       | Trigger              | Purpose                                     |
+|----------------|----------------------|---------------------------------------------|
+| `tests.yml`    | push to main, PRs    | Runs full pytest suite                      |
+| `xlade-ci.yml` | push to main, PRs    | Kernel protection check                     |
+| `mirror.yml`   | push, create, delete | Syncs to GitLab, Codeberg, Bitbucket, Gitea |
 
-By clearly distinguishing trusted infrastructure from experimental components, xLaDe provides a disciplined foundation for ecosystem-level experimentation around Lean 4. At its current stage, it serves as a structured starting point rather than a finished system.
+---
+
+## 9. Current Status and Limitations
+
+As of `v1.5.0`, xLaDe is a functional experimental platform. It is not
+production software. Specific limitations are documented in
+[`LIMITATIONS.md`](../LIMITATIONS.md).
+
+Key facts about the current state:
+
+- EXP-001 executes when Lake is installed, skips cleanly otherwise
+- EXP-002 and EXP-003 execute on any machine with bash
+- The test suite does not require a Lean installation to run
+- No IDE integrations, no GUI, no scheduler
+
+---
+
+## 10. Future Evolution
+
+The architecture is designed to grow incrementally. Planned directions
+include a `prover` field in `experiment.toml` to support Coq and Isabelle
+alongside Lean, a structured output format for AI tool integration, and
+expanded environment reproducibility tooling. See
+[`roadmap.md`](roadmap.md) for the detailed release plan.
+
+Growth remains demand-driven. Complexity is added only when a concrete
+use case requires it.
