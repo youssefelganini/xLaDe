@@ -1,178 +1,355 @@
-# xLaDe CLI Demonstration
+# xLaDe CLI Demo
 
-This document demonstrates **xLaDe as an executable ecosystem orchestration tool**.  
-The CLI provides a **stable control surface** for experiments, policies, and metrics, while deliberately avoiding any modification of the Lean kernel or core semantics.
+xLaDe is used entirely through the `xlade` command-line interface. This
+document covers every command, what it does, and what to expect from it.
 
-The purpose of this document is **illustrative**, not exhaustive.
-
----
-
-## What the xLaDe CLI Is (and Is Not)
-
-### The CLI IS
-- An orchestration layer for ecosystem-level research artifacts
-- A way to:
-  - initialize project state
-  - select ecosystem modes
-  - discover experiments and metrics
-  - run controlled ecosystem experiments
-- A stable interface over evolving research components
-
-### The CLI **IS NOT**
-- A replacement for `lean` or `lake`
-- A proof executor or elaboration engine
-- A production-ready workflow or build system
-
-Many execution backends are intentionally **lightweight or stubbed** at this stage.
+For installation instructions, see [`INSTALL.md`](../INSTALL.md).  
+For a narrative walkthrough, see [`END_TO_END_TRACE.md`](END_TO_END_TRACE.md).
 
 ---
 
-## Note:
+## What the CLI Is (and Is Not)
 
-Please download and build Lean with Lake, and fulfil the other requirements explained in other docs, before running xLaDe, otherwise xLaDe won't run properly.
+The `xlade` CLI is an **ecosystem orchestration tool**. It manages workspace
+state, selects modes, discovers experiments, and executes them. It does not
+replace `lean` or `lake` — it coordinates them.
 
-## 1. Project Initialization
-
-```
-./bin/xlade init
-```
-
-### Effect
-
-* Creates a project-local `.xlade/` directory
-* Initializes runtime state files:
-
-  * `experiments.lock`
-  * `last-run`
-
-### Purpose
-
-* Marks the directory as an xLaDe workspace
-* Enables experiment orchestration and state tracking
-
-### Notes
-
-* Safe to run multiple times
-* Does not modify Lean source files or dependencies
+| The CLI IS                                  | The CLI IS NOT                         |
+|---------------------------------------------|----------------------------------------|
+| An orchestration layer for experiments      | A replacement for `lean` or `lake`     |
+| A workspace and state manager               | A proof executor or elaboration engine |
+| A stable interface over evolving components | A production-ready build system        |
+| A diagnostics tool for your environment     | A GUI or IDE integration               |
 
 ---
 
-## 2. Listing Available Experiments
+## Prerequisites
+
+Before using xLaDe, ensure your environment is set up correctly:
+
+```sh
+xlade doctor
+```
+
+All items should show ✅ before running experiments. See [`INSTALL.md`](../INSTALL.md)
+for setup instructions if anything is missing.
+
+---
+
+## Command Reference
+
+### `xlade init`
+
+Initialises an xLaDe workspace in the current directory.
+
+```sh
+xlade init
+```
+
+Creates a `.xlade/` directory containing:
+
+- `experiments.lock` — tracks experiment state
+- `last-run` — records the most recently executed experiment
+- `metrics.json` — written on every experiment run (created on first run)
+
+Safe to run multiple times. If the workspace already exists, it reports
+so and exits cleanly. Does not modify any Lean source files or dependencies.
+
+**Example output (first run):**
 
 ```
-./bin/xlade list experiments
+Initialized xLaDe workspace.
 ```
 
-### Effect
+**Example output (already initialised):**
 
-* Scans the `experiments/` directory
-* Lists all discoverable experiment identifiers
+```
+xLaDe already initialized in this directory.
+```
 
-### Example Output
+---
+
+### `xlade mode`
+
+Sets the active ecosystem mode. Modes control which experiments are enabled
+and how strictly policies are enforced.
+
+```sh
+xlade mode experimental
+xlade mode stable
+xlade mode onboarding
+```
+
+The selected mode is stored in `~/.xlade/mode` and applies globally across
+all xLaDe projects on the machine.
+
+| Mode           | Experiments | Enforcement | Intended for              |
+|----------------|-------------|-------------|---------------------------|
+| `experimental` | Enabled     | Warnings    | Researchers, contributors |
+| `stable`       | Disabled    | Strict      | Validation, long-term use |
+| `onboarding`   | Disabled    | Minimal     | New users, learning       |
+
+Experiments marked `allowed_modes = ["experimental"]` will only run when
+experimental mode is active.
+
+**Example output:**
+
+```
+xLaDe mode set to: experimental
+```
+
+---
+
+### `xlade list experiments`
+
+Discovers and lists all available experiments in the `experiments/` directory.
+
+```sh
+xlade list experiments
+```
+
+Reads each experiment's `experiment.toml` and displays its ID, status, and
+allowed modes.
+
+**Example output:**
 
 ```
 Available experiments:
-  - EXP-001
-  - EXP-002
+
+EXP-001  active   [experimental]
+EXP-002  active   [experimental]
+EXP-003  active   [experimental]
 ```
 
-### Purpose
-
-* Makes ecosystem experiments visible
-* Decouples experiment discovery from execution logic
-
-At this stage, discovery is **structural**, not semantic.
+Returns a clear message if the `experiments/` directory is missing or
+contains no valid experiments.
 
 ---
 
-## 3. Running an Experiment (Conceptual)
+### `xlade run`
+
+Runs an experiment by ID.
+
+```sh
+xlade run EXP-002
+```
+
+Before executing, `xlade run` validates:
+
+- The workspace is initialised (`.xlade/` exists)
+- The experiment directory and `experiment.toml` exist
+- The current mode is in the experiment's `allowed_modes`
+
+On success it dispatches based on the experiment type:
+
+- `script-policy` — executes the entry shell script via bash
+- `lean-policy` — invokes `lake script run` in the experiment directory
+  (requires Lake; reports `skipped` with install instructions if not found)
+
+After every run, regardless of outcome, xlade writes a structured record
+to `.xlade/metrics.json` with the experiment ID, mode, timestamp, and
+status (`success`, `failed`, `skipped`, or `simulated`).
+
+**Example output (EXP-002, success):**
 
 ```
-./bin/xlade run EXP-001
+Running experiment: EXP-002
+Mode: experimental
+Required Lean: leanprover/lean4:stable
+Timestamp: 2026-06-01 14:22:05
+✅ Kernel untouched.
+Status: success
 ```
 
-### Effect
+**Example output (EXP-001, lake not installed):**
 
-* Validates that the workspace is initialized
-* Records the experiment as the most recent run
-* Invokes the experiment orchestration path
-
-### Current Status
-
-* Execution is intentionally stubbed
-* The command establishes interface, lifecycle, and state flow
-
-This allows experiment structure, policies, and metrics to be evaluated before committing to full execution backends.
+```
+Running experiment: EXP-001
+Mode: experimental
+Required Lean: leanprover/lean4:stable
+Timestamp: 2026-06-01 14:22:10
+Execution: lake not found — cannot run lean-policy experiment.
+Install Lean 4 and Lake via elan to enable full execution.
+  curl https://elan.lean-lang.org/elan-init.sh -sSf | sh
+Status: skipped
+```
 
 ---
 
-## 4. Checking Workspace State
+### `xlade status`
+
+Shows the current workspace state and a summary of past experiment runs.
+
+```sh
+xlade status
+```
+
+Reads from `~/.xlade/mode` and `.xlade/metrics.json`.
+
+**Example output:**
 
 ```
-./bin/xlade status
+xLaDe Status
+
+Mode:     experimental
+Last run: EXP-002
+
+Total runs: 3
+  ✅ success:   2
+  ❌ failed:    1
+
+Recent runs:
+  ✅ EXP-002               2026-06-01 14:22:05
+  ❌ EXP-003               2026-06-01 13:10:42
+  ✅ EXP-002               2026-05-31 09:05:17
 ```
-
-### Effect
-
-* Reports the last experiment run in the current workspace
-* Reads project-local state from `.xlade/`
-
-This command reports **history only**; it does not infer success or failure.
 
 ---
 
-## 5. Environment Diagnostics
+### `xlade metrics`
+
+Displays the full run history and lists research artifact files.
+
+```sh
+xlade metrics
+```
+
+Shows a formatted table of all experiment runs from `.xlade/metrics.json`,
+with status symbols, timestamps, and mode. Also lists any `.md` files
+present in the `metrics/` directory.
+
+**Example output:**
 
 ```
-./bin/xlade doctor
+Run history (3 total):
+
+Experiment       Mode          Timestamp            Status
+---------------------------------------------------------------
+EXP-002          experimental  2026-06-01 14:22:05  ✅ success
+EXP-003          experimental  2026-06-01 13:10:42  ❌ failed
+EXP-002          experimental  2026-05-31 09:05:17  ✅ success
+
+Research artifacts:
+  - summary.md
 ```
-
-### Effect
-
-* Checks for required external tools (e.g. `lake`)
-* Verifies presence of:
-
-  * `lean-core/` submodule
-  * `lean-toolchain`
-
-### Purpose
-
-* Helps diagnose setup issues
-* Provides non-fatal, human-readable diagnostics
 
 ---
 
-## 6. Ecosystem Modes (Overview)
+### `xlade check`
+
+Runs a quick structural check of the current project.
+
+```sh
+xlade check
+```
+
+Verifies that:
+
+- The workspace is initialised
+- The `experiments/` directory exists
+
+Reports any issues found. Does not execute experiments or modify state.
+
+**Example output (issues found):**
 
 ```
-./bin/xlade mode onboarding
-./bin/xlade mode experimental
-./bin/xlade mode stable
+xLaDe check completed with warnings:
+  - Project not initialized
+  - No experiments directory
+```
+
+**Example output (clean):**
+
+```
+xLaDe check passed. No issues found.
+```
+
+---
+
+### `xlade doctor`
+
+Checks the environment for required tools and configuration.
+
+```sh
+xlade doctor
+```
+
+Checks for:
+
+- **elan** — the Lean version manager
+- **lake** — the Lean build tool
+- **lean-core submodule** — present and initialised
+- **lean-toolchain** — file present with toolchain pinned
+- **workspace** — `.xlade/` initialised in current directory
+
+For each missing item, `xlade doctor` prints the exact command needed to
+fix it. Ends with a pass/fail summary.
+
+**Example output (all clear):**
+
+```
+xLaDe Doctor Report
+===================
+
+✅ elan found
+✅ lake found
+✅ lean-core submodule present
+✅ lean-toolchain present  (leanprover/lean4:stable)
+✅ workspace initialised (.xlade present)
+
+✅ All checks passed. xLaDe environment looks good.
+```
+
+**Example output (elan missing):**
+
+```
+❌ elan not found
+   elan is the Lean version manager and is required to install
+   lake and lean. To install it, run:
+
+     curl https://elan.lean-lang.org/elan-init.sh -sSf | sh
+
+   Then restart your shell and run `xlade doctor` again.
+```
+
+---
+
+## Typical Workflow
+
+A standard session from a fresh clone looks like this:
+
+```sh
+# 1. Check the environment first
+xlade doctor
+
+# 2. Initialise the workspace
+xlade init
+
+# 3. Set the mode
+xlade mode experimental
+
+# 4. See what experiments are available
+xlade list experiments
+
+# 5. Run an experiment
+xlade run EXP-002
+
+# 6. Review the results
+xlade status
+xlade metrics
 ```
 
 ---
 
 ## Design Philosophy
 
-The xLaDe CLI is intentionally:
+The xLaDe CLI is designed to be:
 
-* **Explicit** — no hidden behavior
-* **Non-invasive** — Lean core remains untouched
-* **Interface-first** — execution evolves behind stable commands
-* **Research-oriented** — prioritizes clarity and reversibility over completeness
+- **Explicit** — every state change is visible and recorded
+- **Non-invasive** — Lean core is never touched
+- **Interface-stable** — commands remain consistent as execution backends evolve
+- **Research-honest** — limitations are reported clearly, not hidden
 
-This enables disciplined ecosystem experimentation without risking upstream stability.
-
----
-
-## Summary
-
-The xLaDe CLI provides a **minimal but coherent execution narrative** for ecosystem-level research around Lean 4.
-
-At this stage, its value lies in:
-
-* making experiments discoverable,
-* establishing lifecycle and state flow,
-* and providing a concrete substrate for future tooling.
-
-As experiments mature, execution backends may evolve — the CLI interface is designed to remain stable.
+When something cannot run (missing tool, wrong mode, missing file), xLaDe
+tells you exactly why and what to do about it. It never silently skips
+steps or produces misleading output.
