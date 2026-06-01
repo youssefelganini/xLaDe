@@ -10,9 +10,11 @@ One release per month.
 
 ---
 
-## v1.5.0 — "The CLI Becomes Real" ✅ Released 2026-05-26
+## v1.5.0 — "The CLI Becomes Real"
 
-The release where xLaDe stopped being a research document with Python
+**Expected Release — May 2026**
+
+The release where xLaDe stops being a research document with Python
 files next to it and became working software.
 
 - 50-test pytest suite covering all CLI modules
