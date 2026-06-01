@@ -13,9 +13,6 @@ concurrency:
   group: mirrors
   cancel-in-progress: true
 
-permissions:
-  contents: read
-
 jobs:
   mirror:
     runs-on: ubuntu-latest
