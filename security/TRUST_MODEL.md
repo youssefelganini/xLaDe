@@ -1,116 +1,130 @@
 # Trust Model
 
-## Overview
+This document defines what xLaDe trusts, what it does not trust, and
+how that shapes the project's design and distribution strategy.
 
-xLaDe is designed under a minimal-trust model, with trust explicitly divided across two domains:
+---
 
-1. Distribution Trust: how users obtain the project
-2. Project Trust: what components are trusted within the system
+## Two Domains of Trust
 
-This separation allows xLaDe to reduce reliance on any single platform while maintaining strong guarantees around proof correctness.
+xLaDe separates trust into two distinct domains:
+
+1. **Distribution trust** — how users obtain the project
+2. **Component trust** — what is trusted within the running system
 
 ---
 
 ## 1. Distribution Trust
 
-xLaDe is distributed across multiple independent sources:
+### The Problem
 
-* GitHub (primary repository)
-* GitLab (mirror)
-* Onion service (network-independent access)
+Any single distribution channel can be compromised, restricted, or
+made unavailable. GitHub can go down. DNS can be hijacked. A TLS
+certificate authority can be compromised. A mirror can serve stale
+or modified content.
 
-### Assumptions
+A project that depends entirely on GitHub for distribution is one
+platform outage or account compromise away from being inaccessible.
 
-* Any single platform may be unavailable, restricted, or compromised
-* DNS and TLS infrastructure may not be fully trustworthy
-* Mirrors may lag or be incomplete
+### xLaDe's Approach
 
-### Trust Strategy
+xLaDe distributes across multiple independent channels:
 
-* No single source is treated as authoritative in isolation
-* Users are expected to verify:
+| Channel                                          | Trust properties                                           |
+|--------------------------------------------------|------------------------------------------------------------|
+| GitHub (primary)                                 | Convenient, widely trusted, single point of failure        |
+| GitLab, Codeberg, Bitbucket, Gitea, SourceForge  | Independent mirrors, reduce single-platform dependency     |
+| Onion service                                    | Self-authenticating, censorship-resistant, DNS-independent |
+| Torrent                                          | Decentralised, no central server required                  |
 
-  * repository URLs
-  * commit history
-  * version consistency
+No single source is treated as authoritative in isolation. Users are
+expected to verify what they receive.
 
-The onion service provides a self-authenticating access path, reducing reliance on traditional web trust infrastructure.
+### The Onion Service
 
-### Goal
+The onion service address is derived from a cryptographic key. This
+means the address itself is a form of identity — a server at that
+address controls the corresponding private key. Unlike a domain name,
+it cannot be hijacked via DNS or spoofed via a rogue certificate
+authority.
 
-Reduce dependency on centralized infrastructure and ensure continued accessibility under varying network conditions.
+This is why the onion service is the **official project website**,
+not a fallback. It provides stronger identity guarantees than any
+clearnet hostname.
 
----
+### User Responsibilities
 
-## 2. Project Trust
-
-We explain the threat model considered in the design of xLaDe and discuss security considerations relevant to its experimental nature. The objective is to clearly state assumptions, trust boundaries, and potential risks associated with ecosystem-level experimentation.
-
-### 2.1 Threat Model
-
-The threat model for xLaDe is defined with respect to its intended use as a local, experimental framework.
-
-The primary assets of interest are:
-
-* Integrity of the Lean 4 proof kernel
-* Correctness of proof verification
-
-#### Trusted Components
-
-* Lean 4 kernel
-* Lean compiler and core toolchain
-
-These components are assumed to be correct and not adversarially modified.
-
-#### Out of Scope
-
-* Malicious kernel or compiler modification
-* Compromised operating system
-* Network-based or remote adversaries
-* Execution in hostile environments
-
-Instead, the model focuses on:
-
-* unintended effects from experimental tooling
-* repository structure and workflow changes
-* configuration and policy behavior
+- Clone only from sources listed in
+  [`OFFICIAL_SOURCES.md`](../OFFICIAL_SOURCES.md)
+- Verify repository URLs before trusting them
+- Cross-check commit history between sources if integrity is critical
+- Do not trust mirrors or forks not listed in official sources
 
 ---
 
-### 2.2 Security Considerations
+## 2. Component Trust
 
-Given the defined threat model, xLaDe incorporates the following design choices:
+### Trusted Components
 
-#### Isolation of Experimental Components
+These components are assumed to be correct and are not modified by
+xLaDe under any circumstances:
 
-* Tooling scripts, CLI layers, and configurations are treated as **untrusted**
-* These components are isolated from the Lean kernel
-* This prevents compromise of proof soundness
+| Component                   | Why trusted                                 |
+|-----------------------------|---------------------------------------------|
+| Lean 4 kernel               | Upstream, immutable submodule, CI-protected |
+| Lean compiler and toolchain | Installed via elan from official sources    |
 
-#### Reproducibility and Auditability
+The Lean kernel is the foundation everything else depends on. If the
+kernel is compromised, no ecosystem-layer tool can compensate. xLaDe's
+only defence here is to never touch it — which is enforced by CI.
 
-* All changes are tracked via version control
-* Repository state is reproducible
-* Experiments are explicit and reversible
+### Untrusted Components
 
-This enables:
+These components are treated as potentially unsafe and isolated from
+the trusted core:
 
-* tracing the origin of changes
-* rollback of unsafe modifications
+| Component                        | Why untrusted                           |
+|----------------------------------|-----------------------------------------|
+| Python CLI (`xlade/`)            | Application code, not formally verified |
+| Enforcement scripts (`scripts/`) | Bash scripts executed via subprocess    |
+| Experiment code                  | User-contributed, runs as current user  |
+| CI workflows                     | Could be modified by a PR               |
+| Configuration files              | User-controlled                         |
 
-#### Transparency
+Treating these as untrusted means:
 
-* Clear distinction between trusted and experimental layers
-* Documented assumptions and limitations
+- They are isolated from the Lean kernel by design
+- They cannot modify `lean-core/` (enforced by CI)
+- Their effects are explicit, documented, and reversible
+- A bug or malicious modification here cannot compromise proof soundness
 
-This reduces the risk of misuse or misinterpretation.
+### The Isolation Guarantee
+
+The separation between trusted (Lean kernel) and untrusted (everything
+else) is not just documented — it is enforced. CI rejects any PR that
+modifies `lean-core/`. This means the integrity of the kernel does not
+depend on contributor good faith — it depends on CI, which is itself
+auditable.
+
+---
+
+## What This Model Does Not Cover
+
+- **Malicious maintainers** — a maintainer with repository access could
+  modify CI to stop enforcing kernel protection. This is outside the
+  scope of the trust model.
+- **Compromised local environments** — if the user's machine is
+  compromised, no application-level trust model applies.
+- **Lean 4 itself** — the trust model assumes the Lean kernel is correct.
+  It does not verify this.
 
 ---
 
 ## Relationship to Other Documents
 
-* `OFFICIAL_SOURCES.md`: defines where to obtain the project
-* `MIRRORS.md`: describes replication strategy
-* `ONION.md`: defines alternative access model
-* `SECURITY.md`: vulnerability reporting process
-* `SECURITY_POLICY.md`: broader security philosophy
+- [`SECURITY.md`](SECURITY.md) — vulnerability reporting
+- [`SECURITY_POLICY.md`](SECURITY_POLICY.md) — security philosophy and mitigations
+- [`THREAT_MODEL.md`](THREAT_MODEL.md) — specific threats and defences
+- [`../OFFICIAL_SOURCES.md`](../OFFICIAL_SOURCES.md) — authoritative distribution sources
+- [`../ONION.md`](../ONION.md) — onion service rationale
+- [`../MIRRORS.md`](../MIRRORS.md) — mirror list and consistency expectations
