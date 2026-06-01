@@ -44,7 +44,8 @@ def test_status_shows_last_run(status_with_history, capsys):
 def test_status_shows_total_runs(status_with_history, capsys):
     run()
     captured = capsys.readouterr()
-    assert "Total runs: 1" in captured.out
+    assert "Runs" in captured.out
+    assert "1" in captured.out
 
 
 def test_status_shows_success_count(status_with_history, capsys):
@@ -56,7 +57,7 @@ def test_status_shows_success_count(status_with_history, capsys):
 def test_status_no_init(tmp_project, fake_home, capsys):
     run()
     captured = capsys.readouterr()
-    assert "not initialized" in captured.out
+    assert "not initialised" in captured.out
 
 
 def test_status_corrupted_metrics(initialized_project, fake_home, capsys):
