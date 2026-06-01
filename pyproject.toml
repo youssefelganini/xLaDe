@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "xlade"
-version = "1.5.0"
-description = "Experimental Lean 4 Ecosystem Framework"
+version = "1.6.0"
+description = "eXperimental Lean 4 advanced Development ecosystem"
 readme = "README.md"
 license = {file = "LICENSE"}
 requires-python = ">=3.11"
