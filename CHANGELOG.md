@@ -149,3 +149,55 @@ This monthly release makes the CLI tool execute experiments, but the testing of 
   Lean 4 toolchain (addressed in v1.6.0)
 - CLI is functional and tested but still experimental
 - 50/50 tests passing on Python 3.14
+
+## v1.6.0 — 2026-06-01
+
+### Highlights
+- CLI output completely overhauled — consistent [tag] style, 100-char separators, 2-space indent
+- 83-test suite, all passing on Python 3.11–3.14 and verified on FreeBSD and Android aarch64 (Termux)
+- Full CI/CD pipeline — ci.yml runs experiments end to end, cd.yml automates GitHub releases
+
+### Added
+- xlade/core/lean.py — LeanResult dataclass, run_lake_script, run_lake_build, run_lean_file,
+  run_script, lean_version, lake_version with capture/passthrough modes
+- tests/test_lean_core.py — 33 tests covering all lean.py functions
+- .github/workflows/ci.yml — integration workflow running experiments on every push and PR
+- .github/workflows/cd.yml — release workflow triggered on version tags
+- .github/workflows/kernel-protection.yml — renamed from xlade-ci.yml, cleaner output
+- docs/RELEASE_CHECKLIST.md — all version bump locations and release steps in one place
+- bin/README.md — explains why bin/xlade exists and when to use it
+- security/SECURITY.md rewritten — PGP key, response timeline, scope, disclosure policy
+
+### Changed
+- xlade/cli/doctor.py — elan check added, actionable fix hints for all failing checks,
+  aligned [tag] columns, pass/fail summary line
+- xlade/cli/run.py — _execute() delegates to xlade/core/lean.py, elan install hint on skip
+- xlade/cli/main.py — bare xlade shows full form, version, license, website; --help structured
+- xlade/cli/init.py — shows created files and next steps on success
+- xlade/cli/mode.py — numbered feature list per mode after separator
+- xlade/cli/list_experiments.py — aligned table with type column, run count footer
+- xlade/cli/check.py — [tag] format with hints, explicit all-clear output
+- xlade/cli/status.py — structured sections, run summary with counts
+- xlade/cli/metrics.py — aligned table, research artifacts section removed
+- All workflows — permissions: contents: read added per CodeQL recommendation
+- mirror.yml — [warn] style on push failures
+- tests/test_doctor.py, test_check.py, test_init.py, test_list_experiments.py,
+  test_metrics.py, test_mode.py, test_status.py — updated assertions for new output strings
+- tests/test_run_execution.py — patch targets fixed to xlade.core.lean.shutil.which
+- docs/CLI_DEMO.md — full rewrite, accurate command reference with real output
+- docs/END_TO_END_TRACE.md — full rewrite, all three experiments, real terminal output
+- docs/overview.md, architecture.md, WHY_xLaDe.md, RUNTIME_STATE.md,
+  roadmap.md, research_roadmap.md, RESEARCH_SCOPE.md,
+  REPRODUCIBILITY_AND_COMPATIBILITY.md — all rewritten for v1.6.0
+- INSTALL.md — full rewrite, step-by-step elan → lean → lake, platform notes
+- LIMITATIONS.md — expanded with honest per-limitation explanations
+- HOW_TO_READ_THIS_REPO.md — updated reading order and file guidance
+- README.md — full rewrite, professional, logo, name origin removed, problems first
+- CONTRIBUTING.md — experiment proposal process, development setup, security redirect
+- security/SECURITY_POLICY.md, THREAT_MODEL.md, TRUST_MODEL.md — all rewritten
+
+### Notes
+- EXP-001 execution requires Lake — skips cleanly without it
+- CLI output strings changed significantly — any tooling parsing xlade output needs updating
+- xlade-ci.yml deleted — replaced by kernel-protection.yml and ci.yml
+- Verified working on FreeBSD and Android aarch64 (Termux) — pip install and all bash experiments run
