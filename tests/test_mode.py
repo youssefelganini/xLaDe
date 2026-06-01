@@ -23,7 +23,7 @@ def test_mode_onboarding(tmp_project, fake_home):
 def test_mode_invalid_prints_error(tmp_project, fake_home, capsys):
     run("invalid_mode")
     captured = capsys.readouterr()
-    assert "Invalid mode" in captured.out
+    assert "not a valid mode" in captured.out
 
 
 def test_mode_creates_xlade_home_dir(tmp_project, fake_home):
