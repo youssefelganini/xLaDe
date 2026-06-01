@@ -69,3 +69,15 @@ This file mirrors GitHub Releases for archival and offline reference.
 - errors.py duplication removed
 - CODE_OF_CONDUCT.md contact filled in
 - ROADMAP.md added covering v1.5.0 to v2.0.0
+
+## v1.6.0 - 2026-06-01
+
+### Highlights
+- xlade doctor completely overhauled, now it works with actions
+- CLI output made like a real CLI tool
+- 83-test suite, all passing on Python 3.11-3.14
+- Verified working on Android aarch64 (Termux)
+- Full CI/CD pipeline added 
+- All GitHub workflows updated with least-privilege permissions per CodeQL
+- 14 documentation files rewritten to accurately reflect v1.6.0
+- RELEASE_CHECKLIST.md added
