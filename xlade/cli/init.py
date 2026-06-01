@@ -1,11 +1,13 @@
 import os
 
+
 def run():
     root = os.getcwd()
     state_dir = os.path.join(root, ".xlade")
 
     if os.path.exists(state_dir):
-        print("xLaDe already initialized in this directory.")
+        print("  [warn]  Workspace already initialised in this directory.")
+        print("          Location: .xlade/")
         return
 
     os.mkdir(state_dir)
@@ -16,4 +18,11 @@ def run():
     with open(os.path.join(state_dir, "last-run"), "w") as f:
         f.write("none\n")
 
-    print("Initialized xLaDe workspace.")
+    print()
+    print("  Workspace initialised.")
+    print()
+    print("  Created  .xlade/experiments.lock")
+    print("  Created  .xlade/last-run")
+    print()
+    print("  Next:  xlade mode experimental")
+    print()
