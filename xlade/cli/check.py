@@ -1,18 +1,32 @@
 import os
 from xlade.core.errors import error
 
+
 def run():
-    warnings = []
+    issues = []
 
     if not os.path.isdir(".xlade"):
-        warnings.append("Project not initialized")
+        issues.append(("workspace", "not initialised", "run: xlade init"))
 
     if not os.path.isdir("experiments"):
-        warnings.append("No experiments directory")
+        issues.append(("experiments", "directory not found", "expected experiments/ in project root"))
 
-    if warnings:
-        print("xLaDe check completed with warnings:")
-        for w in warnings:
-            print(f"  - {w}")
+    sep = "-" * 100
+
+    print()
+    print("  xLaDe Check")
+    print(f"  {sep}")
+
+    if issues:
+        for label, status, hint in issues:
+            print(f"  {label:<14}  [error]  {status}")
+            print(f"  {'':14}           {hint}")
+        print(f"  {sep}")
+        print(f"  {len(issues)} issue(s) found.")
     else:
-        print("xLaDe check passed. No issues found.")
+        print(f"  workspace     [ok]")
+        print(f"  experiments   [ok]")
+        print(f"  {sep}")
+        print("  All checks passed.")
+
+    print()
