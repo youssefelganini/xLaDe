@@ -15,9 +15,9 @@ For a command reference, see [`CLI_DEMO.md`](CLI_DEMO.md).
 
 A researcher wants to evaluate xLaDe's three active experiments:
 
-- **EXP-001** — Enforced Proof Review (requires Lake)
-- **EXP-002** — Kernel Boundary Violation Detection
-- **EXP-003** — Documentation Coverage Check
+- **exp-001-proof-review** — Enforced Proof Review (requires Lake)
+- **exp-002-kernel-boundary** — Kernel Boundary Violation Detection
+- **exp-003-doc-coverage** — Documentation Coverage Check
 
 The goal is to run all three, understand what each does, and inspect the
 results. The machine has Python 3.12 and git, but Lean is not yet installed.
@@ -59,37 +59,26 @@ xlade doctor
 Output on a machine without Lean installed:
 
 ```
-xLaDe Doctor Report
-===================
-
-❌ elan not found
-   elan is the Lean version manager and is required to install
-   lake and lean. To install it, run:
-
-     curl https://elan.lean-lang.org/elan-init.sh -sSf | sh
-
-   Then restart your shell and run `xlade doctor` again.
-lake not found
-   lake is the Lean build tool and is needed to run lean-policy
-   experiments (e.g. EXP-001). It is installed automatically
-   by elan once a lean-toolchain file is present. Steps:
-
-     1. Install elan (see above if not installed)
-     2. cd into your xLaDe directory
-     3. Run: elan toolchain install leanprover/lean4:stable
-     4. lake should now be available on your PATH
-✅ lean-core submodule present
-✅ lean-toolchain present  (leanprover/lean4:stable)
-⚠️  workspace not initialised
-   Run `xlade init` to set up the project workspace.
-
-=========================
-
-❌ 2 issues found. Fix the items above and re-run `xlade doctor`.
+  xLaDe Doctor
+  ----------------------------------------------------------------------------------------------------
+  elan              [error]  not found
+                             Install: curl https://elan.lean-lang.org/elan-init.sh -sSf | sh
+                             Then restart your shell and re-run xlade doctor.
+  lake              [error]  not found
+                             Install elan first, then:
+                             elan toolchain install leanprover/lean4:stable
+  lean-core         [error]  submodule empty
+                             Run: git submodule update --init --recursive
+  lean-toolchain    [ok]     present  (leanprover/lean4:stable)
+  workspace         [warn]   not initialised
+                             Run: xlade init
+  ----------------------------------------------------------------------------------------------------
+  3 issues found. Fix above and re-run xlade doctor.
 ```
 
-The researcher notes that EXP-001 will be skipped without Lake, but
-EXP-002 and EXP-003 are script-based and will run fine. They proceed.
+The researcher notes that exp-001-proof-review will be skipped without Lake,
+but exp-002-kernel-boundary and exp-003-doc-coverage are script-based and
+will run fine. They proceed.
 
 ---
 
@@ -100,11 +89,15 @@ xlade init
 ```
 
 ```
-Initialized xLaDe workspace.
+  Workspace initialised.
+
+  Created  .xlade/experiments.lock
+  Created  .xlade/last-run
+
+  Next:  xlade mode experimental
 ```
 
-This creates `.xlade/` in the current directory with `experiments.lock`
-and `last-run`. No Lean files are touched.
+This creates `.xlade/` in the current directory. No Lean files are touched.
 
 Running it again is safe:
 
@@ -113,7 +106,8 @@ xlade init
 ```
 
 ```
-xLaDe already initialized in this directory.
+  [warn]  Workspace already initialised in this directory.
+          Location: .xlade/
 ```
 
 ---
@@ -125,7 +119,12 @@ xlade mode experimental
 ```
 
 ```
-xLaDe mode set to: experimental
+  Mode set: experimental
+  ----------------------------------------------------------------------------------------------------
+  1. Experiments enabled
+  2. Policies emit warnings
+  3. No stability guarantees
+  4. Intended for researchers and contributors
 ```
 
 This writes `experimental` to `~/.xlade/mode`. Experiments with
@@ -140,94 +139,105 @@ xlade list experiments
 ```
 
 ```
-Available experiments:
+  Experiments  (3 found)
+  ----------------------------------------------------------------------------------------------------
+  Experiment               Status    Type              Modes
+  ----------------------------------------------------------------------------------------------------
+  exp-001-proof-review     active    lean-policy       experimental
+  exp-002-kernel-boundary  active    script-policy     experimental
+  exp-003-doc-coverage     active    script-policy     experimental
 
-EXP-001  active   [experimental]
-EXP-002  active   [experimental]
-EXP-003  active   [experimental]
+  Run with: xlade run <experiment-id>
 ```
 
-All three are active and allowed in experimental mode.
+All three are active and allowed in experimental mode. The experiment name
+shown is the directory name — this is what you pass to `xlade run`.
 
 ---
 
-## Step 7 — Run EXP-002 (Kernel Boundary Violation Detection)
+## Step 7 — Run exp-002-kernel-boundary
 
-Starting with EXP-002 since it has no Lean dependency.
+Starting with exp-002 since it has no Lean dependency.
 
 ```sh
-xlade run EXP-002
+xlade run exp-002-kernel-boundary
 ```
 
 ```
-Running experiment: EXP-002
-Mode: experimental
-Required Lean: leanprover/lean4:stable
-Timestamp: 2026-06-01 14:10:03
-✅ Kernel untouched.
-Status: success
+  Running experiment: exp-002-kernel-boundary
+  Mode:      experimental
+  Toolchain: leanprover/lean4:stable
+  Timestamp: 2026-06-06 14:10:03
+  ----------------------------------------------------------------------------------------------------
+  [ok]     Kernel untouched.
+  ----------------------------------------------------------------------------------------------------
+  Status: success
 ```
 
-EXP-002 runs `scripts/check-kernel.sh`, which checks whether any files
-under `lean-core/` have been modified relative to `origin/main`. On a
-clean clone, nothing is modified, so it passes.
+exp-002-kernel-boundary runs `scripts/check-kernel.sh`, which checks whether
+any files under `lean-core/` have been modified relative to `origin/main`. On
+a clean clone, nothing is modified, so it passes.
 
 ---
 
-## Step 8 — Run EXP-003 (Documentation Coverage Check)
+## Step 8 — Run exp-003-doc-coverage
 
 ```sh
-xlade run EXP-003
+xlade run exp-003-doc-coverage
 ```
 
 ```
-Running experiment: EXP-003
-Mode: experimental
-Required Lean: leanprover/lean4:stable
-Timestamp: 2026-06-01 14:10:41
-xLaDe Doc Coverage Check
-=========================
-✅ experiment: experiments/exp-001-proof-review/
-✅ experiment: experiments/exp-002-kernel-boundary/
-✅ experiment: experiments/exp-003-doc-coverage/
-✅ mode: modes/experimental/
-✅ mode: modes/onboarding/
-✅ mode: modes/stable/
-✅ policies/ has 4 documentation file(s)
-=========================
-✅ All documentation checks passed.
-Status: success
+  Running experiment: exp-003-doc-coverage
+  Mode:      experimental
+  Toolchain: leanprover/lean4:stable
+  Timestamp: 2026-06-06 14:10:41
+  ----------------------------------------------------------------------------------------------------
+  xLaDe Doc Coverage Check
+  -------------------------
+  [ok]     experiment: experiments/exp-001-proof-review/
+  [ok]     experiment: experiments/exp-002-kernel-boundary/
+  [ok]     experiment: experiments/exp-003-doc-coverage/
+  [ok]     mode: modes/experimental/
+  [ok]     mode: modes/onboarding/
+  [ok]     mode: modes/stable/
+  [ok]     policies/ has 4 documentation file(s)
+  -------------------------
+  [pass]   All documentation checks passed.
+  ----------------------------------------------------------------------------------------------------
+  Status: success
 ```
 
-EXP-003 runs `scripts/check-doc-coverage.sh`, which verifies that every
-experiment and mode directory has a `README.md`, and that `policies/`
-contains at least one `.md` file.
+exp-003-doc-coverage runs `scripts/check-doc-coverage.sh`, which verifies
+that every experiment and mode directory has a `README.md`, and that
+`policies/` contains at least one `.md` file.
 
 ---
 
-## Step 9 — Run EXP-001 (Enforced Proof Review)
+## Step 9 — Run exp-001-proof-review
 
-EXP-001 requires Lake. On this machine it is not installed.
+exp-001-proof-review requires Lake. On this machine it is not installed.
 
 ```sh
-xlade run EXP-001
+xlade run exp-001-proof-review
 ```
 
 ```
-Running experiment: EXP-001
-Mode: experimental
-Required Lean: leanprover/lean4:stable
-Timestamp: 2026-06-01 14:11:15
-Execution: lake not found — cannot run lean-policy experiment.
-Install Lean 4 and Lake via elan to enable full execution.
-  curl https://elan.lean-lang.org/elan-init.sh -sSf | sh
-Status: skipped
+  Running experiment: exp-001-proof-review
+  Mode:      experimental
+  Toolchain: leanprover/lean4:stable
+  Timestamp: 2026-06-06 14:11:15
+  ----------------------------------------------------------------------------------------------------
+  [skip]  lake not found -- cannot run lean-policy experiment.
+          Install Lean 4 and Lake via elan:
+          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh
+  ----------------------------------------------------------------------------------------------------
+  Status: skipped
 ```
 
 The experiment is recorded as `skipped` — not failed. The distinction
 matters: `skipped` means the environment prevented execution, not that
-the experiment logic failed. Once Lake is installed, re-running EXP-001
-will execute the proof review policy for real.
+the experiment logic failed. Once Lake is installed, re-running
+exp-001-proof-review will execute the proof review policy for real.
 
 ---
 
@@ -238,19 +248,18 @@ xlade status
 ```
 
 ```
-xLaDe Status
+  xLaDe Status
+  ----------------------------------------------------------------------------------------------------
+  Workspace   initialised
+  Mode        experimental
+  Last run    exp-001-proof-review
+  ----------------------------------------------------------------------------------------------------
+  Runs        3  (success: 2, skipped: 1)
 
-Mode:     experimental
-Last run: EXP-001
-
-Total runs: 3
-  ✅ success:   2
-  ⏸  other:     1
-
-Recent runs:
-  ⏸  EXP-001               2026-06-01 14:11:15
-  ✅ EXP-003               2026-06-01 14:10:41
-  ✅ EXP-002               2026-06-01 14:10:03
+  Recent:
+    exp-001-proof-review                    2026-06-06 14:11:15  skipped
+    exp-003-doc-coverage                    2026-06-06 14:10:41  success
+    exp-002-kernel-boundary                 2026-06-06 14:10:03  success
 ```
 
 ---
@@ -262,16 +271,13 @@ xlade metrics
 ```
 
 ```
-Run history (3 total):
-
-Experiment       Mode          Timestamp            Status
----------------------------------------------------------------
-EXP-002          experimental  2026-06-01 14:10:03  ✅ success
-EXP-003          experimental  2026-06-01 14:10:41  ✅ success
-EXP-001          experimental  2026-06-01 14:11:15  ⏸ skipped
-
-Research artifacts:
-  - summary.md
+  xLaDe Metrics  (3 run(s))
+  ----------------------------------------------------------------------------------------------------
+  Experiment               Mode          Timestamp            Status
+  ----------------------------------------------------------------------------------------------------
+  exp-002-kernel-boundary  experimental  2026-06-06 14:10:03  success
+  exp-003-doc-coverage     experimental  2026-06-06 14:10:41  success
+  exp-001-proof-review     experimental  2026-06-06 14:11:15  skipped
 ```
 
 The full run history is stored in `.xlade/metrics.json` and survives
@@ -279,7 +285,7 @@ across sessions.
 
 ---
 
-## Step 12 — Install Lean and Re-run EXP-001
+## Step 12 — Install Lean and Re-run exp-001-proof-review
 
 The researcher installs elan and the Lean toolchain:
 
@@ -296,38 +302,39 @@ xlade doctor
 ```
 
 ```
-xLaDe Doctor Report
-===================
-
-✅ elan found
-✅ lake found
-✅ lean-core submodule present
-✅ lean-toolchain present  (leanprover/lean4:stable)
-✅ workspace initialised (.xlade present)
-
-✅ All checks passed. xLaDe environment looks good.
+  xLaDe Doctor
+  ----------------------------------------------------------------------------------------------------
+  elan              [ok]     found
+  lake              [ok]     found
+  lean-core         [ok]     submodule present
+  lean-toolchain    [ok]     present  (leanprover/lean4:stable)
+  workspace         [ok]     initialised
+  ----------------------------------------------------------------------------------------------------
+  All checks passed.
 ```
 
-Re-run EXP-001:
+Re-run exp-001-proof-review:
 
 ```sh
-xlade run EXP-001
+xlade run exp-001-proof-review
 ```
 
 ```
-Running experiment: EXP-001
-Mode: experimental
-Required Lean: leanprover/lean4:stable
-Timestamp: 2026-06-01 15:30:22
-Executing Lake script: enforceReview
-xLaDe: enforcing proof review policy
-✔ Proofs/Reviewed.lean is reviewed
-Status: success
+  Running experiment: exp-001-proof-review
+  Mode:      experimental
+  Toolchain: leanprover/lean4:stable
+  Timestamp: 2026-06-06 15:30:22
+  ----------------------------------------------------------------------------------------------------
+  Executing Lake script: enforceReview
+  xLaDe: enforcing proof review policy
+  [ok]     Proofs/Reviewed.lean is reviewed
+  ----------------------------------------------------------------------------------------------------
+  Status: success
 ```
 
-EXP-001 runs `lake script run enforceReview` inside the experiment
-directory. It reads `Proofs/Reviewed.lean`, confirms the `@reviewed`
-marker is present, and passes.
+exp-001-proof-review runs `lake script run enforceReview` inside the
+experiment directory. It reads `Proofs/Reviewed.lean`, confirms the
+`@reviewed` marker is present, and passes.
 
 ---
 
@@ -357,20 +364,18 @@ xlade init
 
 ## Summary
 
-This trace covered a complete xLaDe session:
-
-| Step                | Command                          | Outcome                                        |
-|---------------------|----------------------------------|------------------------------------------------|
-| Environment check   | `xlade doctor`                   | 2 issues identified, actionable guidance given |
-| Workspace setup     | `xlade init`                     | `.xlade/` created                              |
-| Mode selection      | `xlade mode experimental`        | Experiments enabled                            |
-| Discovery           | `xlade list experiments`         | 3 experiments found                            |
-| EXP-002             | `xlade run EXP-002`              | ✅ success — kernel boundary intact            |
-| EXP-003             | `xlade run EXP-003`              | ✅ success — all docs present                  |
-| EXP-001 (no Lake)   | `xlade run EXP-001`              | ⏸ skipped — lake not found                     |
-| EXP-001 (with Lake) | `xlade run EXP-001`              | ✅ success — proof review enforced             |
-| Results             | `xlade status` / `xlade metrics` | Full run history visible                       |
-| Cleanup             | `rm -rf .xlade`                  | State reset, Lean untouched                    |
+| Step                      | Command                               | Outcome                                    |
+|---------------------------|---------------------------------------|--------------------------------------------|
+| Environment check         | `xlade doctor`                        | 3 issues identified, actionable hints given |
+| Workspace setup           | `xlade init`                          | `.xlade/` created                          |
+| Mode selection            | `xlade mode experimental`             | Experiments enabled                        |
+| Discovery                 | `xlade list experiments`              | 3 experiments found                        |
+| exp-002-kernel-boundary   | `xlade run exp-002-kernel-boundary`   | [ok] success — kernel boundary intact      |
+| exp-003-doc-coverage      | `xlade run exp-003-doc-coverage`      | [pass] success — all docs present          |
+| exp-001-proof-review      | `xlade run exp-001-proof-review`      | [skip] skipped — lake not found            |
+| exp-001 (with Lake)       | `xlade run exp-001-proof-review`      | [ok] success — proof review enforced       |
+| Results                   | `xlade status` / `xlade metrics`      | Full run history visible                   |
+| Cleanup                   | `rm -rf .xlade`                       | State reset, Lean untouched                |
 
 xLaDe orchestrates experiments, records state explicitly, and remains
-fully reversible at every step. 
+fully reversible at every step.
