@@ -31,7 +31,7 @@ Before using xLaDe, ensure your environment is set up correctly:
 xlade doctor
 ```
 
-All items should show ✅ before running experiments. See [`INSTALL.md`](../INSTALL.md)
+All items should show `[ok]` before running experiments. See [`INSTALL.md`](../INSTALL.md)
 for setup instructions if anything is missing.
 
 ---
@@ -58,13 +58,19 @@ so and exits cleanly. Does not modify any Lean source files or dependencies.
 **Example output (first run):**
 
 ```
-Initialized xLaDe workspace.
+  Workspace initialised.
+
+  Created  .xlade/experiments.lock
+  Created  .xlade/last-run
+
+  Next:  xlade mode experimental
 ```
 
 **Example output (already initialised):**
 
 ```
-xLaDe already initialized in this directory.
+  [warn]  Workspace already initialised in this directory.
+          Location: .xlade/
 ```
 
 ---
@@ -95,7 +101,12 @@ experimental mode is active.
 **Example output:**
 
 ```
-xLaDe mode set to: experimental
+  Mode set: experimental
+  ----------------------------------------------------------------------------------------------------
+  1. Experiments enabled
+  2. Policies emit warnings
+  3. No stability guarantees
+  4. Intended for researchers and contributors
 ```
 
 ---
@@ -108,17 +119,21 @@ Discovers and lists all available experiments in the `experiments/` directory.
 xlade list experiments
 ```
 
-Reads each experiment's `experiment.toml` and displays its ID, status, and
-allowed modes.
+Reads each experiment's `experiment.toml` and displays its directory name
+(which is the ID used with `xlade run`), status, type, and allowed modes.
 
 **Example output:**
 
 ```
-Available experiments:
+  Experiments  (3 found)
+  ----------------------------------------------------------------------------------------------------
+  Experiment               Status    Type              Modes
+  ----------------------------------------------------------------------------------------------------
+  exp-001-proof-review     active    lean-policy       experimental
+  exp-002-kernel-boundary  active    script-policy     experimental
+  exp-003-doc-coverage     active    script-policy     experimental
 
-EXP-001  active   [experimental]
-EXP-002  active   [experimental]
-EXP-003  active   [experimental]
+  Run with: xlade run <experiment-id>
 ```
 
 Returns a clear message if the `experiments/` directory is missing or
@@ -128,10 +143,10 @@ contains no valid experiments.
 
 ### `xlade run`
 
-Runs an experiment by ID.
+Runs an experiment by ID. The ID is the directory name under `experiments/`.
 
 ```sh
-xlade run EXP-002
+xlade run exp-002-kernel-boundary
 ```
 
 Before executing, `xlade run` validates:
@@ -150,28 +165,32 @@ After every run, regardless of outcome, xlade writes a structured record
 to `.xlade/metrics.json` with the experiment ID, mode, timestamp, and
 status (`success`, `failed`, `skipped`, or `simulated`).
 
-**Example output (EXP-002, success):**
+**Example output (exp-002-kernel-boundary, success):**
 
 ```
-Running experiment: EXP-002
-Mode: experimental
-Required Lean: leanprover/lean4:stable
-Timestamp: 2026-06-01 14:22:05
-✅ Kernel untouched.
-Status: success
+  Running experiment: exp-002-kernel-boundary
+  Mode:      experimental
+  Toolchain: leanprover/lean4:stable
+  Timestamp: 2026-06-06 14:22:05
+  ----------------------------------------------------------------------------------------------------
+  [ok]     Kernel untouched.
+  ----------------------------------------------------------------------------------------------------
+  Status: success
 ```
 
-**Example output (EXP-001, lake not installed):**
+**Example output (exp-001-proof-review, lake not installed):**
 
 ```
-Running experiment: EXP-001
-Mode: experimental
-Required Lean: leanprover/lean4:stable
-Timestamp: 2026-06-01 14:22:10
-Execution: lake not found — cannot run lean-policy experiment.
-Install Lean 4 and Lake via elan to enable full execution.
-  curl https://elan.lean-lang.org/elan-init.sh -sSf | sh
-Status: skipped
+  Running experiment: exp-001-proof-review
+  Mode:      experimental
+  Toolchain: leanprover/lean4:stable
+  Timestamp: 2026-06-06 14:22:10
+  ----------------------------------------------------------------------------------------------------
+  [skip]  lake not found -- cannot run lean-policy experiment.
+          Install Lean 4 and Lake via elan:
+          curl https://elan.lean-lang.org/elan-init.sh -sSf | sh
+  ----------------------------------------------------------------------------------------------------
+  Status: skipped
 ```
 
 ---
@@ -189,48 +208,40 @@ Reads from `~/.xlade/mode` and `.xlade/metrics.json`.
 **Example output:**
 
 ```
-xLaDe Status
+  xLaDe Status
+  ----------------------------------------------------------------------------------------------------
+  Workspace   initialised
+  Mode        experimental
+  Last run    exp-002-kernel-boundary
+  ----------------------------------------------------------------------------------------------------
+  Runs        3  (success: 2, failed: 1)
 
-Mode:     experimental
-Last run: EXP-002
-
-Total runs: 3
-  ✅ success:   2
-  ❌ failed:    1
-
-Recent runs:
-  ✅ EXP-002               2026-06-01 14:22:05
-  ❌ EXP-003               2026-06-01 13:10:42
-  ✅ EXP-002               2026-05-31 09:05:17
+  Recent:
+    exp-002-kernel-boundary                 2026-06-06 14:22:05  success
+    exp-003-doc-coverage                    2026-06-06 13:10:42  failed
+    exp-002-kernel-boundary                 2026-06-05 09:05:17  success
 ```
 
 ---
 
 ### `xlade metrics`
 
-Displays the full run history and lists research artifact files.
+Displays the full run history from `.xlade/metrics.json`.
 
 ```sh
 xlade metrics
 ```
 
-Shows a formatted table of all experiment runs from `.xlade/metrics.json`,
-with status symbols, timestamps, and mode. Also lists any `.md` files
-present in the `metrics/` directory.
-
 **Example output:**
 
 ```
-Run history (3 total):
-
-Experiment       Mode          Timestamp            Status
----------------------------------------------------------------
-EXP-002          experimental  2026-06-01 14:22:05  ✅ success
-EXP-003          experimental  2026-06-01 13:10:42  ❌ failed
-EXP-002          experimental  2026-05-31 09:05:17  ✅ success
-
-Research artifacts:
-  - summary.md
+  xLaDe Metrics  (3 run(s))
+  ----------------------------------------------------------------------------------------------------
+  Experiment               Mode          Timestamp            Status
+  ----------------------------------------------------------------------------------------------------
+  exp-002-kernel-boundary  experimental  2026-06-06 14:22:05  success
+  exp-003-doc-coverage     experimental  2026-06-06 13:10:42  failed
+  exp-002-kernel-boundary  experimental  2026-06-05 09:05:17  success
 ```
 
 ---
@@ -253,15 +264,25 @@ Reports any issues found. Does not execute experiments or modify state.
 **Example output (issues found):**
 
 ```
-xLaDe check completed with warnings:
-  - Project not initialized
-  - No experiments directory
+  xLaDe Check
+  ----------------------------------------------------------------------------------------------------
+  workspace     [error]  not initialised
+                         run: xlade init
+  experiments   [error]  directory not found
+                         expected experiments/ in project root
+  ----------------------------------------------------------------------------------------------------
+  2 issue(s) found.
 ```
 
 **Example output (clean):**
 
 ```
-xLaDe check passed. No issues found.
+  xLaDe Check
+  ----------------------------------------------------------------------------------------------------
+  workspace     [ok]
+  experiments   [ok]
+  ----------------------------------------------------------------------------------------------------
+  All checks passed.
 ```
 
 ---
@@ -288,28 +309,34 @@ fix it. Ends with a pass/fail summary.
 **Example output (all clear):**
 
 ```
-xLaDe Doctor Report
-===================
-
-✅ elan found
-✅ lake found
-✅ lean-core submodule present
-✅ lean-toolchain present  (leanprover/lean4:stable)
-✅ workspace initialised (.xlade present)
-
-✅ All checks passed. xLaDe environment looks good.
+  xLaDe Doctor
+  ----------------------------------------------------------------------------------------------------
+  elan              [ok]     found
+  lake              [ok]     found
+  lean-core         [ok]     submodule present
+  lean-toolchain    [ok]     present  (leanprover/lean4:stable)
+  workspace         [ok]     initialised
+  ----------------------------------------------------------------------------------------------------
+  All checks passed.
 ```
 
-**Example output (elan missing):**
+**Example output (issues found):**
 
 ```
-❌ elan not found
-   elan is the Lean version manager and is required to install
-   lake and lean. To install it, run:
-
-     curl https://elan.lean-lang.org/elan-init.sh -sSf | sh
-
-   Then restart your shell and run `xlade doctor` again.
+  xLaDe Doctor
+  ----------------------------------------------------------------------------------------------------
+  elan              [error]  not found
+                             Install: curl https://elan.lean-lang.org/elan-init.sh -sSf | sh
+                             Then restart your shell and re-run xlade doctor.
+  lake              [error]  not found
+                             Install elan first, then:
+                             elan toolchain install leanprover/lean4:stable
+  lean-core         [error]  submodule empty
+                             Run: git submodule update --init --recursive
+  lean-toolchain    [ok]     present  (leanprover/lean4:stable)
+  workspace         [ok]     initialised
+  ----------------------------------------------------------------------------------------------------
+  3 issues found. Fix above and re-run xlade doctor.
 ```
 
 ---
@@ -332,7 +359,7 @@ xlade mode experimental
 xlade list experiments
 
 # 5. Run an experiment
-xlade run EXP-002
+xlade run exp-002-kernel-boundary
 
 # 6. Review the results
 xlade status
