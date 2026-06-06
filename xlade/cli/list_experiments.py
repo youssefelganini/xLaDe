@@ -30,7 +30,7 @@ def run():
             experiments.append((name, "invalid", "unknown", "unknown"))
             continue
 
-        exp_id   = config.get("id", name)
+        exp_id   = name
         status   = config.get("status", "unknown")
         modes    = config.get("allowed_modes", [])
         exp_type = config.get("type", "unknown")
