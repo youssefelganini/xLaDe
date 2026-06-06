@@ -4,8 +4,8 @@
 # Fails if lean-core is modified
 
 if git diff --name-only origin/main | grep "^lean-core/" ; then
-  echo "❌ Kernel modification detected. This violates xLaDe policy."
+  echo "  [error]  Kernel modification detected. This violates xLaDe policy."
   exit 1
 else
-  echo "✅ Kernel untouched."
+  echo "  [ok]     Kernel untouched."
 fi
