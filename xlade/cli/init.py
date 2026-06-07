@@ -1,5 +1,6 @@
 import os
 
+sep = "-"*100
 
 def run():
     root = os.getcwd()
@@ -20,9 +21,9 @@ def run():
 
     print()
     print("  Workspace initialised.")
-    print()
+    print(f"  {sep}")
     print("  Created  .xlade/experiments.lock")
     print("  Created  .xlade/last-run")
-    print()
+    print(f"  {sep}")
     print("  Next:  xlade mode experimental")
     print()
