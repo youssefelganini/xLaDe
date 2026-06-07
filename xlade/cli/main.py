@@ -33,6 +33,8 @@ def print_help():
     metrics                     Show full run history and research artifacts
     check                       Quick structural check of the project
     doctor                      Diagnose environment with fix instructions
+    clean                       Remove all xLaDe workspace state
+    validate experiments        Validate all experiment.toml files
     --version                   Show the current version
     --help                      Show this help message
 
@@ -130,6 +132,24 @@ def main():
     if cmd == "doctor":
         from xlade.cli.doctor import run
         run()
+        return
+
+    if cmd == "clean":
+        from xlade.cli.clean import run
+        run()
+        return
+
+    if cmd == "validate":
+        if len(sys.argv) < 3 or sys.argv[2] != "experiments":
+            print("  Usage: xlade validate experiments")
+            return
+        from xlade.cli.validate import run
+        run()
+        return
+
+    if cmd == "ai":
+        print("  [activated]  Secret mode enabled.")
+        print("               AGI mode on.")
         return
 
     print(f"  [error]  Unknown command: '{cmd}'")
