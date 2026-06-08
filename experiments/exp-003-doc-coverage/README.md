@@ -16,7 +16,7 @@ modes, and policies — making doc gaps visible and enforceable via CI.
 
 ## Enforcement Mechanism
 
-- Script-based: `scripts/check-doc-coverage.sh`
+- Script-based: `scripts/experiments/check-doc-coverage.sh`
 - Checks for README.md in every experiment directory
 - Checks for README.md in every mode directory
 - Checks for at least one .md file in policies/
