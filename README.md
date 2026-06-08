@@ -31,7 +31,8 @@ controlled environment for running experiments on how Lean is *used*,
 enforcing architectural boundaries that prevent kernel drift, and recording
 enough metadata to reproduce any experiment correctly, years later.
 
-xLaDe is built primarily as a command-line tool for Linux, with tested support for Windows (via WSL) and Android (via Termux). It installs through pip, ships with a comprehensive test suite and remains experimental.
+xLaDe is built primarily as a command-line tool for Linux, with tested support for Windows (via WSL) and Android (via Termux). 
+It installs through pip, ships with a comprehensive test suite and remains experimental.
 
 ---
 
@@ -75,7 +76,7 @@ kernel changes.
 xlade init                          Initialise a workspace
 xlade mode experimental             Select a mode
 xlade list experiments              Discover available experiments
-xlade run exp-002-kernel-boundary   Run an experiment
+xlade run <experiment-id>           Run an experiment
 xlade status                        View run summary
 xlade metrics                       View full run history
 xlade doctor                        Diagnose environment issues
@@ -97,6 +98,56 @@ to fix each issue, not just what is missing.
 readable in the terminal or processable as JSON.
 
 ---
+
+## Working
+
+xLaDe is not just a theoretical framework or concept. It runs experiments on real external Lean 4 projects.
+
+```
+$ xlade list experiments
+
+  Experiments  (5 found)
+  ----------------------------------------------------------------------------------------------------
+  Experiment               Status    Type              Modes
+  ----------------------------------------------------------------------------------------------------
+  exp-001-proof-review     active    lean-policy       experimental
+  exp-002-kernel-boundary  active    script-policy     experimental
+  exp-003-doc-coverage     active    script-policy     experimental
+  exp-004-project-proof-1  active    script-policy     experimental
+  exp-005-lean4-courses    active    script-policy     experimental
+```
+
+```
+$ xlade run exp-005-lean4-courses
+
+  Running experiment:  exp-005-lean4-courses
+  Mode:                experimental
+  Toolchain:           leanprover/lean4:v4.30.0
+  Timestamp:           2026-06-01 12:00:00
+  ----------------------------------------------------------------------------------------------------
+  xLaDe EXP-005: Lean4 Courses
+  ----------------------------------------------------------------------------------------------------
+  [info]   Project: experiments/exp-005-lean4-courses/lean4-courses
+  [info]   Running: lake build
+  ----------------------------------------------------------------------------------------------------
+  ℹ [2/4] Replayed Solutions
+  ...                           # Truncated for display
+  ℹ [3/4] Replayed Examples
+  ...                           # Truncated for display
+  info: 0000-startup/Examples.lean:76:0: 3628800
+  Build completed successfully (4 jobs).
+  ----------------------------------------------------------------------------------------------------
+  [pass]   lake build succeeded. 32 modules compiled.
+  ----------------------------------------------------------------------------------------------------
+  Status: success
+```
+
+EXP-004 and EXP-005 wrap real external Lean 4 repositories added as git
+submodules. Neither project has any code connection to xLaDe. xLaDe
+wraps them, runs `lake build`, and records full environment metadata —
+toolchain version, timestamp, status without touching their source.
+
+That is the non-invasive ecosystem layer claim demonstrated, not just described.
 
 ## Quick Start
 
@@ -123,15 +174,21 @@ notes: [`INSTALL.md`](INSTALL.md).
 
 ## Active Experiments
 
-| Experiment                | Type          | What it enforces                                   | Requires |
-|---------------------------|---------------|----------------------------------------------------|----------|
-| `exp-001-proof-review`    | lean-policy   | Proof review markers via Lake script               | Lake     |
-| `exp-002-kernel-boundary` | script-policy | No modifications to `lean-core/`                   | bash     |
-| `exp-003-doc-coverage`    | script-policy | README present in all experiments, modes, policies | bash     |
-| `exp-004-project-proof-1` | lean-policy   | Verifies proof of an external repo with lake build | Lake     |
+| Experiment                | Type          | What it does                                        | Requires | External |
+|---------------------------|---------------|-----------------------------------------------------|----------|----------|
+| `exp-001-proof-review`    | lean-policy   | Enforces proof review markers via Lake script       | Lake     | No       |
+| `exp-002-kernel-boundary` | script-policy | Detects modifications to `lean-core/`               | bash     | No       |
+| `exp-003-doc-coverage`    | script-policy | README present in all experiments, modes, policies  | bash     | No       |
+| `exp-004-project-proof-1` | script-policy | Builds an external proof repo via `lake build`      | Lake     | Yes      |
+| `exp-005-lean4-courses`   | script-policy | Builds a 32-module external Lean 4 course repo      | Lake     | Yes      |
 
-EXP-002 and EXP-003 run on any machine with bash. EXP-001 and EXP-004 require a
-full Lean 4 + Lake installation via elan and skips cleanly without it.
+EXP-002 and EXP-003 run on any machine with bash.
+EXP-001, EXP-004, and EXP-005 require a full Lean 4 + Lake installation
+via elan and skip cleanly without it.
+
+EXP-004 and EXP-005 are external projects with no code connection to
+xLaDe. They are included as git submodules and executed without
+modification.
 
 ---
 
