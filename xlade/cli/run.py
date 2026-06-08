@@ -52,10 +52,10 @@ def run(exp_id):
     entry = config.get("entry", None)
 
     print()
-    print(f"  Running experiment: {exp_id}")
-    print(f"  Mode:      {current_mode}")
-    print(f"  Toolchain: {lean_toolchain}")
-    print(f"  Timestamp: {timestamp}")
+    print(f"  Running experiment:  {exp_id}")
+    print(f"  Mode:                {current_mode}")
+    print(f"  Toolchain:           {lean_toolchain}")
+    print(f"  Timestamp:           {timestamp}")
     print(f"  {SEP}")
 
     status = _execute(exp_type, entry, exp_path)
