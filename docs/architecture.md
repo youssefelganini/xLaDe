@@ -197,7 +197,7 @@ type = "script-policy"
 status = "active"
 allowed_modes = ["experimental"]
 lean_toolchain = "leanprover/lean4:stable"
-entry = "scripts/check-kernel.sh"
+entry = "scripts/experiments/check-kernel.sh"
 ```
 
 The `entry` field is relative to the repository root for `script-policy`
