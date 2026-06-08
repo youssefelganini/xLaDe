@@ -4,3 +4,6 @@
 [submodule "experiments/exp-004-project-proof-1/exp-004-project-proof-1"]
 	path = experiments/exp-004-project-proof-1/exp-004-project-proof-1
 	url = https://github.com/LakshitSinghBishtTM/exp-004-project-proof-1
+[submodule "experiments/exp-005-lean4-courses/lean4-courses"]
+	path = experiments/exp-005-lean4-courses/lean4-courses
+	url = https://github.com/BaDaaS/lean4-courses
