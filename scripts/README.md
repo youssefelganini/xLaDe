@@ -1,8 +1,9 @@
 # xLaDe Scripts
 
-This directory contains **auxiliary scripts** used to orchestrate Lean-related workflows across the xLaDe repository.
-Scripts operate at the **repository and ecosystem level**, not at the language or kernel level.
-They exist to support policy enforcement, experiment coordination, and structural validation.
+This directory contains **auxiliary scripts** used to orchestrate Lean-related
+workflows across the xLaDe repository. Scripts operate at the **repository and
+ecosystem level**, not at the language or kernel level. They exist to support
+policy enforcement, experiment coordination, and structural validation.
 
 ---
 
@@ -28,42 +29,34 @@ Scripts must never alter Lean source code or trusted semantics.
 
 ---
 
-## Common Script Responsibilities
+## Important: elan PATH
 
-Scripts in this directory may perform tasks such as:
+Scripts that invoke `lake` or `lean` must source elan's environment at the
+top of the script. Python's subprocess does not inherit shell profile
+modifications (`.zshrc`, `.bash_profile`, etc.), so elan-managed binaries
+will not be on PATH unless explicitly sourced.
 
-- enforcing repository-wide policies
-- detecting kernel boundary violations
-- validating experiment isolation
-- checking repository structure invariants
-- coordinating experiment-related workflows
+Add this block after `set -e` in every experiment script that uses lake or lean:
 
-All behavior must be **deterministic and reproducible**.
+```bash
+if [ -f "$HOME/.elan/env" ]; then
+  source "$HOME/.elan/env"
+fi
+```
+
+This applies to all platforms — macOS, Linux, and Android (Termux). Without
+it, scripts will fail with `lake: command not found` even when lake is
+correctly installed.
 
 ---
 
-## Policy Enforcement
+## Current Scripts
 
-Some scripts are used to enforce **repository-wide policies**, including but not
-limited to:
-
-- kernel immutability
-- experiment isolation
-- structural invariants
-
-### Enforcement Contexts
-
-Scripts may be invoked:
-
-- manually by contributors
-- automatically as part of CI workflows
-- during pre-merge or validation checks
-
-Violations detected by scripts may result in:
-- warnings (in permissive contexts), or
-- failures (in strict or CI contexts)
-
-The enforcement level depends on the active mode and CI configuration.
+| Script                   | Used by                    | Purpose                              |
+|--------------------------|----------------------------|--------------------------------------|
+| `check-kernel.sh`        | `exp-002-kernel-boundary`  | Detect modifications to `lean-core/` |
+| `check-doc-coverage.sh`  | `exp-003-doc-coverage`     | Verify README.md presence in dirs    |
+| `run-exp-004.sh`         | `exp-004-project-proof-1`  | Run `lake build` on external project |
 
 ---
 
@@ -71,26 +64,17 @@ The enforcement level depends on the active mode and CI configuration.
 
 All scripts must adhere to the following constraints:
 
-- **Non-invasive**  
-  Scripts must not modify Lean kernel sources or semantics.
+- **Non-invasive** — scripts must not modify Lean kernel sources or semantics
+- **Transparent** — script behavior should be clear from inspection
+- **Reversible** — removing a script or CI hook must disable enforcement without side effects
 
-- **Transparent**  
-  Script behavior should be clear from inspection.
-
-- **Reversible**  
-  Removing a script or CI hook must disable enforcement without side effects.
-
-These constraints reflect xLaDe’s research-first and safety-oriented design.
+These constraints reflect xLaDe's research-first and safety-oriented design.
 
 ---
 
 ## Summary
 
-xLaDe scripts provide a **lightweight enforcement and orchestration layer** around Lean usage.
-
-They:
-- support disciplined ecosystem experimentation,
-- protect architectural boundaries,
-- and integrate cleanly with CI workflows,
-
-while keeping Lean’s trusted core untouched.
+xLaDe scripts provide a **lightweight enforcement and orchestration layer**
+around Lean usage. They support disciplined ecosystem experimentation, protect
+architectural boundaries, and integrate cleanly with CI workflows, while
+keeping Lean's trusted core untouched.
