@@ -11,7 +11,7 @@ allowed_modes = ["experimental"]
 # Environment (v1.4.0 feature)
 lean_toolchain = "leanprover/lean4:stable"
 
-# Execution (for future use)
+# Execution
 entry = "policy.lean"
 
 description = "Enforces proof review discipline using Lean-based checks."
