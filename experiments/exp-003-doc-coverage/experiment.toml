@@ -4,5 +4,5 @@ type = "script-policy"
 status = "active"
 allowed_modes = ["experimental"]
 lean_toolchain = "leanprover/lean4:stable"
-entry = "scripts/check-doc-coverage.sh"
+entry = "scripts/experiments/check-doc-coverage.sh"
 description = "Verifies that all experiments, modes, and policies have required documentation."
