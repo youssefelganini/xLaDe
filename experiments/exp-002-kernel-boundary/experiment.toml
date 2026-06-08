@@ -11,7 +11,7 @@ allowed_modes = ["experimental"]
 # Environment (not critical here but keep consistent)
 lean_toolchain = "leanprover/lean4:stable"
 
-# Execution (future)
-entry = "scripts/check-kernel.sh"
+# Execution
+entry = "scripts/experiments/check-kernel.sh"
 
 description = "Detects modifications to lean-core and enforces kernel immutability."
