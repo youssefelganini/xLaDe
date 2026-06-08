@@ -1,0 +1,11 @@
+id = "EXP-005"
+name = "Lean4 Courses"
+type = "script-policy"
+status = "active"
+allowed_modes = ["experimental"]
+lean_toolchain = "leanprover/lean4:v4.30.0"
+entry = "scripts/experiments/run-exp-005.sh"
+description = "External Lean 4 course repository by BaDaaS. 32 modules covering foundations to advanced metaprogramming. Zero dependencies beyond stdlib. First external project xLaDe did not author and has no code connection to."
+success_criteria = "compilation"
+project_repo = "https://github.com/BaDaaS/lean4-courses"
+project_submodule = "experiments/exp-005-lean4-courses/lean4-courses"
