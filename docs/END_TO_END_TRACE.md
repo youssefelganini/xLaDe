@@ -174,7 +174,7 @@ xlade run exp-002-kernel-boundary
   Status: success
 ```
 
-exp-002-kernel-boundary runs `scripts/check-kernel.sh`, which checks whether
+exp-002-kernel-boundary runs `scripts/experiments/check-kernel.sh`, which checks whether
 any files under `lean-core/` have been modified relative to `origin/main`. On
 a clean clone, nothing is modified, so it passes.
 
@@ -207,7 +207,7 @@ xlade run exp-003-doc-coverage
   Status: success
 ```
 
-exp-003-doc-coverage runs `scripts/check-doc-coverage.sh`, which verifies
+exp-003-doc-coverage runs `scripts/experiments/check-doc-coverage.sh`, which verifies
 that every experiment and mode directory has a `README.md`, and that
 `policies/` contains at least one `.md` file.
 
