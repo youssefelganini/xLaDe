@@ -2,8 +2,16 @@ name: SourceForge Mirror
 
 on:
   push:
-    branches:
-      - main
+  create:
+  delete:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mirrors
+  cancel-in-progress: true
 
 jobs:
   mirror:
