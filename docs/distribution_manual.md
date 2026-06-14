@@ -160,7 +160,7 @@ Part B - Github
 
 Part C - Syncing
 
-1. Write sourceforge.yml (You can use from any of my repos)
+1. Write sourceforge.yml (You can use from any of my public repos)
 2. Go to sourceforge
 3. Go to source code, and see the top. It will have "Read/Write SSH Access"
 4. Add it to yml file. 
