@@ -7,13 +7,13 @@ name = "xlade"
 version = "1.6.0"
 description = "eXperimental Lean 4 advanced Development ecosystem"
 readme = "README.md"
-license = {file = "LICENSE"}
+license = "GPL-3.0-only"
+license-files = ["LICENSE"]
 requires-python = ">=3.11"
 keywords = ["lean4", "formal-verification", "proof-assistant", "ecosystem"]
 classifiers = [
     "Environment :: Console",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Operating System :: OS Independent",
