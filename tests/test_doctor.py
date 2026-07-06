@@ -53,9 +53,7 @@ def test_doctor_lean_core_has_git_but_no_src_shows_not_populated(tmp_project, ca
     # Simulates `git submodule init` without `git submodule update`
     # lean-core/ exists and contains .git file but no src/
     os.makedirs("lean-core")
-    open(os.path.join("lean-core", ".git"), "w").write(
-        "gitdir: ../.git/modules/lean-core\n"
-    )
+    open(os.path.join("lean-core", ".git"), "w").write("gitdir: ../.git/modules/lean-core\n")
     run()
     captured = capsys.readouterr()
     assert "lean-core" in captured.out
@@ -89,9 +87,7 @@ def test_doctor_elan_found(tmp_project, capsys, monkeypatch):
         "xlade.core.lean.shutil.which",
         lambda x: "/usr/bin/elan" if x == "elan" else None,
     )
-    monkeypatch.setattr(
-        "shutil.which", lambda x: "/usr/bin/elan" if x == "elan" else None
-    )
+    monkeypatch.setattr("shutil.which", lambda x: "/usr/bin/elan" if x == "elan" else None)
     run()
     captured = capsys.readouterr()
     assert "elan" in captured.out

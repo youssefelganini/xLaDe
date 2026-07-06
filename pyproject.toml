@@ -41,3 +41,11 @@ include = ["xlade*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.black]
+line-length = 120
+target-version = ["py314"]
+
+[tool.isort]
+profile = "black"
+line_length = 120

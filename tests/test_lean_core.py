@@ -219,9 +219,7 @@ def test_lean_version_capture_returns_string(monkeypatch):
     )
     monkeypatch.setattr(
         "xlade.core.lean._run",
-        lambda cmd, **kw: LeanResult(
-            success=True, returncode=0, stdout="Lean (version 4.x.x)", command=cmd
-        ),
+        lambda cmd, **kw: LeanResult(success=True, returncode=0, stdout="Lean (version 4.x.x)", command=cmd),
     )
     result = lean_version(passthrough=False)
     assert isinstance(result, LeanResult)
@@ -234,9 +232,7 @@ def test_lake_version_capture_returns_string(monkeypatch):
     )
     monkeypatch.setattr(
         "xlade.core.lean._run",
-        lambda cmd, **kw: LeanResult(
-            success=True, returncode=0, stdout="Lake version 4.x.x", command=cmd
-        ),
+        lambda cmd, **kw: LeanResult(success=True, returncode=0, stdout="Lake version 4.x.x", command=cmd),
     )
     result = lake_version(passthrough=False)
     assert isinstance(result, LeanResult)

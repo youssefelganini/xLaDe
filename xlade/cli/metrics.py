@@ -27,7 +27,7 @@ def _show_run_history():
     try:
         with open(metrics_path, "r") as f:
             data = json.load(f)
-    except (json.JSONDecodeError, IOError):
+    except json.JSONDecodeError, IOError:
         print()
         print("  [error]  metrics.json is corrupted.")
         print("           Delete .xlade/metrics.json to reset run history.")
@@ -51,9 +51,7 @@ def _show_run_history():
     print()
     print(f"  xLaDe Metrics  ({len(data)} run(s))")
     print(f"  {SEP}")
-    print(
-        f"  {'Experiment':<{col_id}}  {'Mode':<{col_mode}}  {'Timestamp':<{col_ts}}  Status"
-    )
+    print(f"  {'Experiment':<{col_id}}  {'Mode':<{col_mode}}  {'Timestamp':<{col_ts}}  Status")
     print(f"  {SEP}")
 
     for r in data:

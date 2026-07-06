@@ -47,7 +47,7 @@ def run():
     try:
         with open(metrics_path, "r") as f:
             data = json.load(f)
-    except (json.JSONDecodeError, IOError):
+    except json.JSONDecodeError, IOError:
         print(f"  {SEP}")
         print("  [error]  metrics.json is corrupted.")
         print("           Delete .xlade/metrics.json to reset run history.")

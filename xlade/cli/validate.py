@@ -55,9 +55,7 @@ def _check_experiment(exp_path, name):
             continue
 
         if field == "status" and val not in VALID_STATUSES:
-            issues.append(
-                (field, "invalid", f"'{val}' not in {sorted(VALID_STATUSES)}")
-            )
+            issues.append((field, "invalid", f"'{val}' not in {sorted(VALID_STATUSES)}"))
             continue
 
         if field == "allowed_modes":
@@ -69,9 +67,7 @@ def _check_experiment(exp_path, name):
         if field == "entry":
             exp_type = config.get("type", "")
             if exp_type == "script-policy" and not os.path.isfile(val):
-                issues.append(
-                    (field, "not found", f"script '{val}' does not exist on disk")
-                )
+                issues.append((field, "not found", f"script '{val}' does not exist on disk"))
                 continue
 
         ok.append(field)
@@ -131,8 +127,6 @@ def run():
         print("  [pass]   All experiments valid.")
     else:
         plural = "issue" if total_issues == 1 else "issues"
-        print(
-            f"  [fail]   {total_issues} {plural} found across {len(entries)} experiment(s)."
-        )
+        print(f"  [fail]   {total_issues} {plural} found across {len(entries)} experiment(s).")
 
     print()

@@ -42,9 +42,7 @@ def run(exp_id):
 
     allowed_modes = config.get("allowed_modes", [])
     if allowed_modes and current_mode not in allowed_modes:
-        print(
-            f"  [error]  Experiment '{exp_id}' is not allowed in mode: {current_mode}"
-        )
+        print(f"  [error]  Experiment '{exp_id}' is not allowed in mode: {current_mode}")
         print(f"           Allowed modes: {', '.join(allowed_modes)}")
         return
 
@@ -107,7 +105,7 @@ def _write_metrics(exp_id, mode, lean_toolchain, timestamp, config, status):
         try:
             with open(metrics_path, "r") as f:
                 existing = json.load(f)
-        except (json.JSONDecodeError, IOError):
+        except json.JSONDecodeError, IOError:
             existing = []
 
     entry = {

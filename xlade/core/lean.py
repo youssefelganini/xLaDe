@@ -130,9 +130,7 @@ def run_lake_script(
     missing = _require("lake")
     if missing is not None:
         return missing
-    return _run(
-        ["lake", "script", "run", script_name], cwd=cwd, passthrough=passthrough
-    )
+    return _run(["lake", "script", "run", script_name], cwd=cwd, passthrough=passthrough)
 
 
 def run_lake_build(
